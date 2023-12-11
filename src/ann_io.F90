@@ -12,11 +12,7 @@ subroutine read_input_ann(parini,iproc,ann_arr)
     character(5):: stypat
     real(8):: rcut
     do iann=1,ann_arr%nann
-        if(parini%bondbased_ann) then
-            stypat=parini%stypat(1)
-        else
-            stypat=parini%stypat(iann)
-        endif
+        stypat=parini%stypat(iann)
         fn_fullpath=trim(parini%cwd)//'/'//'input.ann.'//trim(stypat)
         open(unit=1,file=trim(fn_fullpath),status='old',iostat=ios)
         if(ios/=0) then
@@ -34,14 +30,6 @@ subroutine read_input_ann(parini,iproc,ann_arr)
         endif
         close(1)
     enddo
-    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-    !    do i=1,ann_arr%nann
-    !        do j=i,ann_arr%nann
-    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-    !        enddo
-    !    enddo
-    !endif
 end subroutine read_input_ann
 !*****************************************************************************************
 subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
@@ -106,13 +94,11 @@ subroutine read_symmetry_functions(parini,iproc,ifile,ann,rcut)
 
     read(ifile,'(a)') strline
     read(strline,*) ann%ng1
-    if(.not. parini%bondbased_ann .and. ann%ng1>0) then
-        stop 'ERROR: symmetry function of type G3 not implemented yet.'
+    if(ann%ng1>0) then
+        stop 'ERROR: symmetry function of type G1 not implemented yet.'
     endif
     do ig=1,ann%ng1
-        if(.not. parini%bondbased_ann) then
-            stop 'ERROR: g1 is not ready.'
-        endif
+        stop 'ERROR: g1 is not ready.'
         i0=i0+1
         read(ifile,'(a)') strline
         read(strline,*,iostat=ios) ann%g1eta(ig),ann%g1rs(ig),ann%gbounds(1,i0),ann%gbounds(2,i0)
@@ -272,25 +258,15 @@ subroutine write_ann_all(parini,ann_arr,iter)
     else
         write(fn,'(a11,i5.5)') '.ann.param.',iter
     endif
-    if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
-        if(parini%ntypat>1) then
-            stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
-        endif
-        do i=1,ann_arr%nann
-            write(fn_tt,'(i1)') i
-            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
-            write(*,'(a)') trim(filename)
-            call write_ann(parini,filename,ann_arr%ann(i))
-        enddo
-    elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' &
-        .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='centt') then
+    if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' &
+        .or. trim(ann_arr%approach)=='cent2') then
         do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
             write(*,'(a)') trim(filename)
             call write_ann(parini,filename,ann_arr%ann(i))
         enddo
     else
-        stop 'ERROR: writing ANN parameters is only for cent1,centt,tb'
+        stop 'ERROR: writing ANN parameters is only for cent1,tb'
     endif
 end subroutine write_ann_all
 !*****************************************************************************************
@@ -390,18 +366,11 @@ subroutine read_ann(parini,ann_arr)
     character(50):: filename
     do iann=1,ann_arr%nann
         write(fn,'(a10)') '.ann.param'
-        if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
-            if(parini%ntypat>1) then
-                stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
-            endif
-            write(fn_tt,'(i1)') iann
-            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
-            write(*,'(a)') trim(filename)
-        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' &
-            .or. trim(ann_arr%approach)=='cent2'.or. trim(ann_arr%approach)=='centt') then
+        if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' &
+            .or. trim(ann_arr%approach)=='cent2') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
-            stop 'ERROR: reading ANN parameters is only for cent1,centt,tb'
+            stop 'ERROR: reading ANN parameters is only for cent1,tb'
         endif
         open(unit=1,file=trim(filename),status='old',iostat=ios)
         if(ios/=0) then
@@ -441,14 +410,6 @@ subroutine read_ann(parini,ann_arr)
         !-------------------------------------------------------
         close(1)
     enddo
-    !if(.not. (parini%bondbased_ann .and. trim(ann_arr%approach)=='tb')) then
-    !    do i=1,ann_arr%nann
-    !        do j=i,ann_arr%nann
-    !            ann_arr%reprcut(i,j)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-    !            ann_arr%reprcut(j,i)=ann_arr%ann(i)%rionic+ann_arr%ann(j)%rionic
-    !        enddo
-    !    enddo
-    !endif
 end subroutine read_ann
 !*****************************************************************************************
 subroutine read_data_old(parini,filename_list,atoms_arr)

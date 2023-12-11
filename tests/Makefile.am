@@ -17,7 +17,6 @@ SHORT_TESTDIRS = testforces_FD \
 				 vibfreq_fourpoints \
 				 train_atombased \
 				 train_CENT1 \
-				 train_CENTT \
 				 saddle_2s_splsad \
 				 saddle_2s_neb \
 				 genconf_gensymcrys \
