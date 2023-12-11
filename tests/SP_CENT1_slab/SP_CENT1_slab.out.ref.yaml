@@ -249,7 +249,6 @@
    normalization                       : False
    bondbased                           : False
    prefit                              : False
-   prefit_centt                        : False
    read_forces                         : True
    restart_param                       : False
    restart_iter                        : 0

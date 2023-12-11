@@ -101,7 +101,6 @@ module mod_ann
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
         logical:: linear_rho_pot_initiated=.false. 
-        logical:: trial_energy_required=.false.
         character(30):: event='unknown'
         character(50):: approach='unknown'
         character(50):: syslinsolver='unknown'

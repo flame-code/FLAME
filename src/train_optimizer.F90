@@ -2,6 +2,7 @@
 module mod_opt_ann
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr, convert_x_ann_arr
+    use mod_refdata, only: typ_refdata
     use mod_flm_futile
     implicit none
     private
@@ -187,10 +188,6 @@ subroutine ekf_rivals(cost_object,parini,opt_ann)
         r0=10.d0
         alpha=100.d-2
         rf=1.d-6
-    elseif(trim(parini%approach_ann)=='centt') then
-        r0=10.d0
-        alpha=100.d-2
-        rf=1.d-6
     elseif(trim(parini%approach_ann)=='cent3') then
         r0=10.d0
         alpha=100.d-2
@@ -308,7 +305,7 @@ subroutine ekf_rivals(cost_object,parini,opt_ann)
     endif
 end subroutine ekf_rivals
 !*****************************************************************************************
-subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
+subroutine ann_lm(parini,ann_arr,refdata,opt_ann)
     use mod_parini, only: typ_parini
     use mod_symfunc, only: typ_symfunc_arr
     use mod_parlm, only: typ_parlm
@@ -318,13 +315,12 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     !local variables
     type(typ_ann_arr):: ann_arr
     type(typ_opt_ann):: opt_ann
-    type(typ_atoms_arr):: atoms_train
-    type(typ_atoms_arr):: atoms_valid
-    type(typ_symfunc_arr):: symfunc_train
-    type(typ_symfunc_arr):: symfunc_valid
+    type(typ_refdata):: refdata
     type(typ_parlm):: parlm
     real(8):: tt, epot
     integer:: m, iann
+    associate(atoms_train=>refdata%atoms_train,atoms_valid=>refdata%atoms_valid)
+    associate(symfunc_train=>refdata%symfunc_train,symfunc_valid=>refdata%symfunc_valid)
     if(parini%fit_hoppint) then
         call fit_hgen(parini,ann_arr,opt_ann)
     endif
@@ -359,6 +355,8 @@ subroutine ann_lm(parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_v
     opt_ann%x(1:parlm%n)=parlm%x(1:parlm%n)
     write(*,*) 'info= ',parlm%info
     call final_lmder_modified(parlm)
+    end associate
+    end associate
 end subroutine ann_lm
 !*****************************************************************************************
 subroutine fcn_epot(m,n,x,fvec,fjac,ldfjac,iflag,parini,ann_arr,atoms_train,atoms_valid,symfunc_train,symfunc_valid,opt_ann)
