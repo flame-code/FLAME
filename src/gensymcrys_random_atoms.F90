@@ -1,4 +1,5 @@
-subroutine random_atom(LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_KINDS,NKINDS,KINDS,NGUESS,KINDSDIST_MIN,RXYZ,RED_POS_PRIM,LATVEC_PRIM)
+
+subroutine random_atom(gensymcrys,LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_KINDS,NKINDS,KINDS,NGUESS,KINDSDIST_MIN,RXYZ,RED_POS_PRIM,LATVEC_PRIM)
 !Idea of this subroutine: suppose that sg_ops has already been called and RSYM, etc is provided
 !1.) Get symmetry operations 
 !2.) Get the random sampling of atomic positions 
@@ -6,7 +7,9 @@ subroutine random_atom(LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_
 !4.) Expand the primitive cell to check if the new atom is acceptable
 !5.) accept/reject the position and cycle
 
+    use mod_gensymcrys, only: typ_gensymcrys
 implicit none
+    type(typ_gensymcrys), intent(in):: gensymcrys
 INTEGER:: LATSGP, CRYSSYS,BRAV, NAT_CELL,NKINDS, NGUESS,KINDS(NAT_CELL),NAT_KINDS(NKINDS),NSYMP,NSYM,NSYMMAX,COUNT_LOOP
 integer:: sumkinds,i,iat,k,l,m,iat_cur,iat_cur1,ikind, counter,NPOS,IPOS,iat_cur_oldsym,counter_old,errcount
 real(8):: RSYM(4,4,NSYMMAX),RED_POS(3,NGUESS),RED_POS_PRIM(3,NAT_CELL),RXYZ(3,NAT_CELL),LATVEC_PRIM(3,3),KINDSDIST_MIN(NKINDS,NKINDS)
@@ -23,7 +26,9 @@ COUNT_LOOP=0
 sumkinds=0
 do i=1,nkinds
   sumkinds=sumkinds+nat_kinds(i)
+  if(gensymcrys%iverbose>1) then
   write(*,*) "nat_kinds(i)",nat_kinds(i)
+  endif
 enddo
 if(NAT_CELL.ne.sumkinds) stop "Number of atoms in cell not consistent with number of atom kinds"
 if(NAT_CELL.gt.NGUESS) stop "Increase NGUESS for appropriate unit cell sampling"
@@ -34,7 +39,9 @@ if(NAT_CELL.gt.NGUESS) stop "Increase NGUESS for appropriate unit cell sampling"
 
 !2.) call random atom in conventional cell sampling 
 1060 continue
+if(gensymcrys%iverbose>1) then
 write(*,*) "Starting (over) new generation", COUNT_LOOP
+endif
 if(COUNT_LOOP.gt.20) then
 write(*,*) "No structure found that fit the requirements. Exiting"
 kinds=0
@@ -43,11 +50,15 @@ endif
 iat_cur=0
 kinds=0
 errcount=0
+if(gensymcrys%iverbose>1) then
 write(*,*) "NKINDS",nkinds
 write(*,*) "NAT_CELL",nat_cell
+endif
 
 call random_incell_main(LATSGP,CRYSSYS,NGUESS,RED_POS)
+if(gensymcrys%iverbose>1) then
 write(*,*) "Incell called"
+endif
 do ikind=1,nkinds
 dist_count=0
 !  write(*,*)"nat_kinds(ikind)",nat_kinds(ikind)
@@ -55,7 +66,9 @@ counter=0
   do 
 1040 continue
     if(dist_count.gt.NAT_CELL*NGUESS) then
+       if(gensymcrys%iverbose>1) then
        write(*,*) "Volume probably too small, exiting"
+       endif
        kinds=0
        return 
     endif
@@ -159,7 +172,9 @@ counter=0
 1050 continue   
 enddo
 
+if(gensymcrys%iverbose>1) then
 write(*,*) "Finished random atoms"
+endif
 if(nat_cell.ne.iat_cur)then
 
 write(*,*) "Something wrong with atom numbers",nat_cell,iat_cur
