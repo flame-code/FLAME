@@ -1,8 +1,7 @@
 !*****************************************************************************************
 subroutine yaml_get_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
-    use yaml_output
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !nullify(parini%dict_user)
@@ -23,6 +22,22 @@ subroutine yaml_get_parameters(parini)
     call yaml_dict_dump(parini%dict)
     call yaml_comment('',hfill='~')
     !-------------------------------------------------------
+    call yaml_get_all_parameters(parini)
+
+    call check_nonoptional_parameters(parini)
+
+    call dict_free(parini%dict)
+    nullify(parini%dict)
+    call dict_free(parini%dict_user)
+    nullify(parini%dict_user)
+end subroutine yaml_get_parameters
+!*****************************************************************************************
+subroutine yaml_get_all_parameters(parini)
+    use mod_parini, only: typ_parini
+    use mod_flm_futile
+    implicit none
+    type(typ_parini), intent(inout):: parini
+    !local variales
     parini%subdict=>dict_iter(parini%dict)
     do while(associated(parini%subdict))
         select case(trim(dict_key(parini%subdict)))
@@ -64,14 +79,7 @@ subroutine yaml_get_parameters(parini)
         parini%subdict=>dict_next(parini%subdict)
     end do
     nullify(parini%subdict)
-
-    call check_nonoptional_parameters(parini)
-
-    call dict_free(parini%dict)
-    nullify(parini%dict)
-    call dict_free(parini%dict_user)
-    nullify(parini%dict_user)
-end subroutine yaml_get_parameters
+end subroutine yaml_get_all_parameters
 !*****************************************************************************************
 subroutine yaml_get_main_parameters(parini)
     use mod_parini, only: typ_parini
@@ -141,7 +149,7 @@ end subroutine yaml_get_main_parameters
 !*****************************************************************************************
 subroutine yaml_get_minhopp_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -176,7 +184,7 @@ end subroutine yaml_get_minhopp_parameters
 subroutine yaml_get_opt_parameters(parini,paropt)
     use mod_parini, only: typ_parini
     use mod_opt, only: typ_paropt
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
     type(typ_paropt), intent(inout):: paropt
@@ -204,7 +212,7 @@ end subroutine yaml_get_opt_parameters
 !*****************************************************************************************
 subroutine yaml_get_geopt_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -227,7 +235,7 @@ end subroutine yaml_get_geopt_parameters
 !*****************************************************************************************
 subroutine yaml_get_geopt_prec_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -237,7 +245,7 @@ end subroutine yaml_get_geopt_prec_parameters
 !*****************************************************************************************
 subroutine yaml_get_saddle_opt_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -247,7 +255,7 @@ end subroutine yaml_get_saddle_opt_parameters
 !*****************************************************************************************
 subroutine yaml_get_saddle_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -285,7 +293,7 @@ end subroutine yaml_get_saddle_parameters
 !*****************************************************************************************
 subroutine yaml_get_potential_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -346,7 +354,7 @@ end subroutine yaml_get_potential_parameters
 !*****************************************************************************************
 subroutine yaml_get_ann_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -389,7 +397,7 @@ end subroutine yaml_get_ann_parameters
 !*****************************************************************************************
 subroutine yaml_get_dynamics_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -428,7 +436,7 @@ end subroutine yaml_get_dynamics_parameters
 !*****************************************************************************************
 subroutine yaml_get_bader_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -440,7 +448,7 @@ end subroutine yaml_get_bader_parameters
 !*****************************************************************************************
 subroutine yaml_get_genconf_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -506,7 +514,7 @@ end subroutine yaml_get_genconf_parameters
 !*****************************************************************************************
 subroutine yaml_get_conf_comp_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -516,7 +524,7 @@ end subroutine yaml_get_conf_comp_parameters
 !*****************************************************************************************
 subroutine yaml_get_testforces_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -526,7 +534,7 @@ end subroutine yaml_get_testforces_parameters
 !*****************************************************************************************
 subroutine yaml_get_single_point_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -541,7 +549,7 @@ end subroutine yaml_get_single_point_parameters
 !*****************************************************************************************
 subroutine yaml_get_ewald_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -576,7 +584,7 @@ end subroutine yaml_get_ewald_parameters
 !*****************************************************************************************
 subroutine yaml_get_misc_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -603,7 +611,7 @@ end subroutine yaml_get_misc_parameters
 !*****************************************************************************************
 subroutine yaml_get_confinement_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -727,7 +735,7 @@ end subroutine yaml_get_confinement_parameters
 !*****************************************************************************************
 subroutine yaml_get_fingerprint_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -756,9 +764,7 @@ end subroutine yaml_get_fingerprint_parameters
 !*****************************************************************************************
 subroutine yaml_get_fit_elecpot_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
-    use dynamic_memory
-    use yaml_output
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -813,8 +819,7 @@ end subroutine yaml_get_fit_elecpot_parameters
 !*****************************************************************************************
 subroutine set_dict_parini_default(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
-    use yaml_parse
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -828,9 +833,7 @@ end subroutine set_dict_parini_default
 !*****************************************************************************************
 subroutine set_dict_parini_user(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
-    use yaml_parse
-    use dynamic_memory
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(inout):: parini
     !local variales
@@ -852,7 +855,7 @@ end subroutine set_dict_parini_user
 !*****************************************************************************************
 subroutine check_nonoptional_parameters(parini)
     use mod_parini, only: typ_parini
-    use dictionaries
+    use mod_flm_futile
     implicit none
     type(typ_parini), intent(in):: parini
     !local variales

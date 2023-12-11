@@ -100,7 +100,8 @@ integer:: nat,natin,iat,ierror,io,n,k,fragarr(nat),fragarr_tmp,lhead(nat),llist(
 logical:: fixat(nat),fixlat(7),readfix,reduced_tmp,readfrag
 character(1) :: isfixed,ch_tmp
 character(2) :: element
-character(40):: filename,units
+character(len=*):: filename
+character(len=*):: units
 real(8):: pos(3,nat),xred(3,nat),latvec(3,3),dproj(6),strten(6),fcart(3,nat)
 real(8):: angbohr,evhartree,enthalpy_at,printval1,printval2
 character(200):: line

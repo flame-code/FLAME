@@ -1,10 +1,33 @@
 !*****************************************************************************************
+module mod_gensymcrys
+    implicit none
+    private
+    public:: typ_gensymcrys
+    type typ_gensymcrys
+        integer:: iverbose
+        logical, public:: initialized=.false.
+        contains
+        procedure, public, pass(self):: init_gensymcrys
+    end type typ_gensymcrys
+contains
+!*****************************************************************************************
+subroutine init_gensymcrys(self,iverbose)
+    implicit none
+    class(typ_gensymcrys), intent(inout):: self
+    integer, intent(in):: iverbose
+    self%iverbose=iverbose
+    self%initialized=.true.
+end subroutine init_gensymcrys
+!*****************************************************************************************
+end module mod_gensymcrys
+!*****************************************************************************************
 subroutine gensymcrys_many(parini)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_allocate_old, atom_deallocate_old
     use mod_atoms, only: atom_copy_old, set_rat, typ_file_info
     use mod_yaml_conf, only: write_yaml_conf
     use mod_const, only: bohr2ang
+    use mod_gensymcrys, only: typ_gensymcrys
     implicit none
     type(typ_parini), intent(in):: parini
     !local variables
@@ -14,6 +37,7 @@ subroutine gensymcrys_many(parini)
     integer:: iat, iconf, nconf, nconf_allproc, ierr
     integer:: ifu, NAT_CELL_MAX
     real(8):: target_vol_per_atom, ttrand, tt1, tt2
+    type(typ_gensymcrys):: gensymcrys
     character(5), allocatable:: stypat(:)
     integer, allocatable:: NAT_KINDS(:)
     real(8), allocatable:: KINDSDIST_MIN(:,:)
@@ -31,6 +55,7 @@ subroutine gensymcrys_many(parini)
 #if defined(MPI)
     include 'mpif.h'
 #endif
+    call gensymcrys%init_gensymcrys(parini%iverbose)
     NKINDS=parini%ntypat
     allocate(stypat(NKINDS))
     allocate(NAT_KINDS(NKINDS))
@@ -52,7 +77,7 @@ subroutine gensymcrys_many(parini)
     ntry=parini%ntry
     ncells=1 !parini%ncells !probably values other than 1 will not work
     !---------------------------------------------------------------------
-    nsym_tot=4425
+    call set_nsym_tot(nsym_tot)
     allocate(cryssys_all(230),brav_all(230),nsymp_all(230),nsym_all(230),ind_rsym_all(230))
     allocate(rsym_all(4,4,nsym_tot))
     if(parini%mpi_env%iproc==0) then
@@ -94,7 +119,7 @@ subroutine gensymcrys_many(parini)
         NAT_KINDS(i)=parini%nat_types_fu(i)*parini%list_fu(ifu)
     enddo
     NAT_CELL_ALL(iconf)=sum(NAT_KINDS(1:NKINDS))
-    call gensymcrys_single(parini,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all, &
+    call gensymcrys_single(gensymcrys,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all, &
         nsym_all,ind_rsym_all,target_vol_per_atom,stypat,NCELLS,NAT_CELL_ALL(iconf),ntry, &
         i_spacegroup,NKINDS,NAT_KINDS,KINDSDIST_MIN,cv_all(1,1,iconf),rxyz_all(1,1,iconf),sat_all(1,iconf),succeeded)
     if(succeeded .and. iconf==nconf) exit
@@ -114,6 +139,13 @@ subroutine gensymcrys_many(parini)
     file_info%filename_positions='posout.yaml'
     do iconf=1,nconf_allproc
         call atom_allocate_old(atoms,NAT_CELL_ALLPROC(iconf),0,0)
+        !IMPORTANT:
+        !The following conversion of rxyz_allproc and cellvec are
+        !due to the assumption made by write_yaml_conf, where
+        !it considers normal the positions and cell vectors are
+        !in atomic units. The input parameters of this task are
+        !in Angstrom and output of gensymcrys_single are in the same units
+        !of the input parameters
         rxyz_allproc(1:3,1:atoms%nat,iconf)=rxyz_allproc(1:3,1:atoms%nat,iconf)/bohr2ang
         atoms%cellvec(1:3,1:3)=cv_allproc(1:3,1:3,iconf)/bohr2ang
         call set_rat(atoms,rxyz_allproc(1,1,iconf),.true.)
@@ -143,12 +175,20 @@ subroutine gensymcrys_many(parini)
     deallocate(KINDSDIST_MIN)
 end subroutine gensymcrys_many
 !*****************************************************************************************
-subroutine gensymcrys_single(parini,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all, &
+subroutine set_nsym_tot(nsym_tot)
+    implicit none
+    integer, intent(out):: nsym_tot
+    !local variables
+    nsym_tot=4425
+end subroutine set_nsym_tot
+!*****************************************************************************************
+subroutine gensymcrys_single(gensymcrys,nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all, &
         nsym_all,ind_rsym_all,target_vol_per_atom,stypat,NCELLS,NAT_CELL,ntry, &
         i_spacegroup,NKINDS,NAT_KINDS,KINDSDIST_MIN,cv,rxyz,sat,succeeded)
+    use mod_gensymcrys, only: typ_gensymcrys
     use mod_parini, only: typ_parini
     implicit none
-    type(typ_parini), intent(in):: parini
+    type(typ_gensymcrys), intent(in):: gensymcrys
     integer, intent(in):: nsym_tot
     real(8), intent(in):: rsym_all(4,4,nsym_tot)
     integer, intent(in):: cryssys_all(230), brav_all(230)
@@ -174,6 +214,10 @@ integer::NPOS_IRRED
 integer,allocatable:: NPOS_IRRED_ARR(:)
 integer::  isize,idate(8),order(1), iat, itry
 real(8):: vol_prim
+if(.not. gensymcrys%initialized) then
+    write(*,*) 'ERROR: gensymcrys is not initialized in gensymcrys_single'
+    stop
+endif
 succeeded=.false.
 NGUESS=100
 NGUESS=max(NGUESS,NAT_CELL)
@@ -188,9 +232,11 @@ elseif(i_spacegroup==0) then
 else
     LATSGP=i_spacegroup
 endif
+if(gensymcrys%iverbose>0) then
 write(*,*) "Spacegroup", LATSGP
+endif
 
-call optcell(ncells,cells)
+call optcell(gensymcrys,ncells,cells)
 
 allocate(KINDS(NAT_CELL))
 !allocate(RXYZ(3,NAT_CELL))
@@ -216,11 +262,13 @@ endif
 
 call sg_ops(nsym_tot,rsym_all,cryssys_all,brav_all,nsymp_all,nsym_all,ind_rsym_all, &
     LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX)
+if(gensymcrys%iverbose>1) then
 write(*,*) "LATSGP",LATSGP
 write(*,*) "NSYMP",NSYMP
 write(*,*) "NSYM",NSYM
 WRITE(*,*)"BRAV",BRAV
 write(*,*) "NGUESS",NGUESS
+endif
 call random_incell_main(LATSGP,CRYSSYS,NGUESS,RED_POS)
 
 !Generating the random primitive unit cell
@@ -228,10 +276,12 @@ call random_lattice(LATSGP,CRYSSYS,BRAV,LATVEC,LATVEC_PRIM,TARGET_VOL)
 
 
 call find_ir_multiplicity(LATSGP,RSYM,NSYMP,NSYM,BRAV,NSYMMAX,NGUESS,NPOS_IRRED,NPOS_IRRED_ARR)
+if(gensymcrys%iverbose>1) then
 write(*,*) "Irreducible Multiplicity"
 do i=1,NPOS_IRRED
    write(*,*)NPOS_IRRED_ARR(i)
 enddo
+endif
 do j=1,NKINDS
    if(NAT_KINDS(j).lt.minval(NPOS_IRRED_ARR(1:NPOS_IRRED))) then
       write(*,'(a4,i3,a10,i3,a41,i3)') "NAT ",NAT_KINDS(j) ," of KINDS ",j," is smaller than the irred. Multiplicity ",minval(NPOS_IRRED_ARR(1:NPOS_IRRED))
@@ -241,29 +291,37 @@ do j=1,NKINDS
    do i=1,NPOS_IRRED
          if(NAT_KINDS(j).ge.NPOS_IRRED_ARR(i)) then
            if(modulo(NAT_KINDS(j),NPOS_IRRED_ARR(i))==0) then
+             if(gensymcrys%iverbose>1) then
              write(*,'(a10,i3,a)') "Atom type ",j," looks fine" 
+             endif
              exit
            endif
          endif
+      if(gensymcrys%iverbose>1) then
       write(*,'(a10,i3,a)') "Atom type ",j," seems not to be solvable with this space group" 
      write(*,*) "Going back to start" 
+      endif
      goto 1050
    enddo
 enddo
 
 
 
-call random_atom(LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_KINDS,NKINDS,KINDS,NGUESS,KINDSDIST_MIN,RXYZ,RED_POS_PRIM,LATVEC_PRIM)
+call random_atom(gensymcrys,LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_KINDS,NKINDS,KINDS,NGUESS,KINDSDIST_MIN,RXYZ,RED_POS_PRIM,LATVEC_PRIM)
 if(kinds(1)==0) then
+if(gensymcrys%iverbose>1) then
 write(*,*) "random atom unsuccessful"
+endif
 goto 1050
 endif
 
 !Multiplicate the primitive cell if necesarry
 call dist_dim(latvec_prim,dout)
 !Sorting the "cells" array to inverse to the sorting of dout
+if(gensymcrys%iverbose>1) then
 write(*,*) "dout",dout
 write(*,*) "cells",cells
+endif
 do i=1,3
 order=minloc(dout(:))
 t_cells(order(1))=cells(i)
@@ -272,10 +330,14 @@ enddo
 latvec(:,1)=latvec_prim(:,1)*t_cells(1)
 latvec(:,2)=latvec_prim(:,2)*t_cells(2)
 latvec(:,3)=latvec_prim(:,3)*t_cells(3)
+if(gensymcrys%iverbose>1) then
 write(*,*) "t_cells",t_cells
+endif
 
 succeeded=.true.
+if(gensymcrys%iverbose>0) then
 write(*,'(a,i5)') 'Succeeded: itry= ',itry
+endif
 
 call rxyz_cart2int_gensymcrys(latvec_prim,ratred,RXYZ,NAT_CELL)
 do iat=1,NAT_CELL
@@ -288,8 +350,10 @@ call latvec2dproj_gensymcrys(dproj,latvec_prim,rotmat,rxyz,nat_cell)
 
 call getvol_gensymcrys(latvec_prim,vol_prim)
 call getvol_gensymcrys(latvec,vol)
+if(gensymcrys%iverbose>1) then
 write(*,'(a,2f10.1)') 'volume of primitive cell and per atom ',vol_prim,vol_prim/NAT_CELL
 write(*,'(a,2f10.1)') 'volume of supercell cell and per atom ',vol,vol/(NAT_CELL*t_cells(1)*t_cells(2)*t_cells(3))
+endif
 
 cv=0.d0
 cv(1,1)=dproj(1)
@@ -386,17 +450,23 @@ end subroutine
 
 !********************************************************************************
 
-subroutine optcell(n_cells,cells)
+subroutine optcell(gensymcrys,n_cells,cells)
+    use mod_gensymcrys, only: typ_gensymcrys
 implicit none
+    type(typ_gensymcrys), intent(in):: gensymcrys
 integer:: n_cells, cells(3), meancells,m,k,l,t_cells,m_cells,s_cells,p_cells
 
 m_cells=int(n_cells**(1.d0/3.d0))
+if(gensymcrys%iverbose>1) then
 write(*,*) "Number of cells per dim in average",n_cells**(1.d0/3.d0),m_cells
+endif
 cells(1)=N_CELLS
 cells(2)=1
 cells(3)=1
 t_cells=1000000000
+if(gensymcrys%iverbose>1) then
 write(*,*) "Target number of cells:", n_cells
+endif
 do m=1,n_cells
 do k=1,m
 do l=1,k
@@ -405,7 +475,9 @@ s_cells=(m-k)**2+(k-l)**2+(l-m)**2
 if(p_cells==n_cells)then
   if(s_cells.lt.t_cells) then
     t_cells=s_cells
+    if(gensymcrys%iverbose>1) then
     write(*,'(a,4(1x,i4))') "      #cells, x,y,z", s_cells,m,k,l
+    endif
     cells(1)=m
     cells(2)=k
     cells(3)=l
@@ -414,7 +486,9 @@ endif
 enddo
 enddo
 enddo
+if(gensymcrys%iverbose>1) then
 write(*,'(a,4(1x,i4))') "Found optimal cell:", m_cells, cells
+endif
 end subroutine
 
 !********************************************************************************
