@@ -22,7 +22,7 @@
 ./task_mod.o : ./task_mod.F90 
 ./es_radpots_cent2.o : ./es_radpots_cent2.F90 ./electrostatics_mod.o 
 ./train_optimizer.o : ./train_optimizer.F90 ./atoms_mod.o ./ann_mod.o ./ann_symfunc_mod.o ./processors_mod.o ./flm_futile_mod.o ./ann_refdata.o ./ann_mod.o ./parini_mod.o 
-./gensymcrys_random_atoms.o : ./gensymcrys_random_atoms.F90 
+./gensymcrys_random_atoms.o : ./gensymcrys_random_atoms.F90 ./gensymcrys_input_creator.o 
 ./parser_core.o : ./parser_core.F90 ./task_mod.o 
 ./gensymcrys_trans_uniprim.o : ./gensymcrys_trans_uniprim.F90 
 ./es_coulomb_spline.o : ./es_coulomb_spline.F90 ./definitions_mod.o ./spline_mod.o ./shortrange_mod.o 
@@ -213,7 +213,7 @@
 ./timing_mod.o : ./timing_mod.F90 
 ./minhopp_pot.o : ./minhopp_pot.F90 ./potential_main.o ./processors_mod.o ./opt_mod.o ./atoms_mod.o ./parini_mod.o 
 ./cell_utils.o : ./cell_utils.F90 
-./parser_yaml.o : ./parser_yaml.F90 ./opt_mod.o ./constants_minhocao_mod.o ./parini_mod.o 
+./parser_yaml.o : ./parser_yaml.F90 ./opt_mod.o ./constants_minhocao_mod.o ./flm_futile_mod.o ./parini_mod.o 
 ./processors.o : ./processors.F90 ./processors_mod.o 
 ./ann_pot_tb.o : ./ann_pot_tb.F90 ./ann_mod.o ./constants_mod.o ./cell_linkedlists.o ./train_optimizer.o ./cell_linkedlists.o ./ann_symfunc_mod.o ./ann_mod.o ./atoms_mod.o ./tightbinding_mod.o ./tightbinding_mod.o ./parini_mod.o 
 ./potential_FF.o : ./potential_FF.F90 ./atoms_mod.o ./parini_mod.o 

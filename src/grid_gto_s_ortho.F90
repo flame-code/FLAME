@@ -211,15 +211,17 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ng
     !grid points that are outside of box.
     !local variables
     !work arrays to save the values of one dimensional gaussian function.
-    real(8), allocatable:: wx(:), wy(:), wz(:)
+    real(8), allocatable:: ww(:,:)
     real(8):: rhoz, rhoyz, pi
     real(8):: hgxinv, hgyinv, hgzinv
-    real(8):: width_inv, width_inv_xat, width_inv_yat, width_inv_zat
-    real(8):: width_inv_hgx, width_inv_hgy, width_inv_hgz
+    real(8):: width_inv, width_inv_xyz(3)
+    real(8):: width_inv_hhh(3)
     real(8):: xat, yat, zat, facqiat, fac, width
     real(8):: hx, hy, hz
     integer:: iat, iw, ix, iy, iz, iatox, iatoy, iatoz, jx, jy, jz
+    integer:: iww, ii
     integer:: nbgx, nbgy, nbgz, nagx, nagy, nagz
+    integer:: nbgmax
     integer:: ibcx, ibcy, ibcz
     real(8), allocatable:: wa(:,:,:)
     integer, allocatable:: mboundg(:,:,:)
@@ -271,9 +273,8 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ng
     mboundg=f_malloc([1.to.2,-nbgy.to.nbgy,-nbgz.to.nbgz],id='mboundg')
     call get_glimitsphere(hx,hy,hz,nbgx,nbgy,nbgz,mboundg)
     wa=f_malloc([1-nagx.to.ngx+nagx,1-nagy.to.ngy+nagy,1-nagz.to.ngz+nagz],id='wa')
-    wx=f_malloc([-nbgx.to.nbgx],id='wx')
-    wy=f_malloc([-nbgy.to.nbgy],id='wy')
-    wz=f_malloc([-nbgz.to.nbgz],id='wz')
+    nbgmax=max(nbgx,nbgy,nbgz)
+    ww=f_malloc([-nbgmax.to.nbgmax,1.to.3],id='ww')
     pi=4.d0*atan(1.d0)
     hgxinv=1.d0/hx
     hgyinv=1.d0/hy
@@ -317,33 +318,29 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ng
         width=gw(iat)
         width_inv=1.d0/width
         fac=1.d0/(width*sqrt(pi))**3
-        width_inv_hgx=width_inv*hx
-        width_inv_hgy=width_inv*hy
-        width_inv_hgz=width_inv*hz
+        width_inv_hhh(1)=width_inv*hx
+        width_inv_hhh(2)=width_inv*hy
+        width_inv_hhh(3)=width_inv*hz
 
-        width_inv_xat=width_inv*xat
-        width_inv_yat=width_inv*yat
-        width_inv_zat=width_inv*zat
-        do iw=-nbgx,nbgx
-            wx(iw)=exp(-(width_inv_hgx*iw-width_inv_xat)**2)
-        enddo
-        do iw=-nbgy,nbgy
-            wy(iw)=exp(-(width_inv_hgy*iw-width_inv_yat)**2)
-        enddo
-        do iw=-nbgz,nbgz
-            wz(iw)=exp(-(width_inv_hgz*iw-width_inv_zat)**2)
+        width_inv_xyz(1)=width_inv*xat
+        width_inv_xyz(2)=width_inv*yat
+        width_inv_xyz(3)=width_inv*zat
+        do ii=1,3
+            do iww=-nbgmax,nbgmax
+                ww(iww,ii)=exp(-(width_inv_hhh(ii)*iww-width_inv_xyz(ii))**2)
+            enddo
         enddo
         facqiat=fac*qat(iat)
         do iz=-nbgz,nbgz
-            rhoz=facqiat*wz(iz)
+            rhoz=facqiat*ww(iz,3)
             jz=iatoz+iz
             do iy=-nbgy,nbgy
-                rhoyz=rhoz*wy(iy)
+                rhoyz=rhoz*ww(iy,2)
                 jy=iatoy+iy
                 do ix=mboundg(1,iy,iz),mboundg(2,iy,iz)
                     jx=iatox+ix
                     !write(*,'(5i5)') iat,iatox,ix,iatoy,iy
-                    wa(jx,jy,jz)=wa(jx,jy,jz)+rhoyz*wx(ix)
+                    wa(jx,jy,jz)=wa(jx,jy,jz)+rhoyz*ww(ix,1)
                 enddo
             enddo
         enddo
@@ -363,9 +360,7 @@ subroutine put_gto_sym_ortho(parini,bc,reset,nat,rxyz,qat,gw,rgcut,xyz111,ngx,ng
     !    enddo
     !enddo
     !stop
-    call f_free(wx)
-    call f_free(wy)
-    call f_free(wz)
+    call f_free(ww)
     call f_free(wa)
     call f_free(mboundg)
     call f_release_routine()
