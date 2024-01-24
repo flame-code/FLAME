@@ -53,7 +53,7 @@
 ./electrostatics_mod.o : ./electrostatics_mod.F90 ./greenf_kspace_mod.o ./spline_mod.o ./cell_linkedlists.o 
 ./flame_as_potential_mod.o : ./flame_as_potential_mod.F90 ./atoms_mod.o ./task_mod.o ./parini_mod.o 
 ./optimizer_bfgs.o : ./optimizer_bfgs.F90 ./opt_mod.o 
-./md_util.o : ./md_util.F90 ./atoms_mod.o 
+./md_util.o : ./md_util.F90 ./basic_utilities.o ./atoms_mod.o 
 ./optimizer_fire.o : ./optimizer_fire.F90 ./opt_mod.o ./parini_mod.o 
 ./potential_TERSOFF.o : ./potential_TERSOFF.F90 ./parini_mod.o ./minhocao_mod.o ./constants_minhocao_mod.o ./minhocao_mod.o 
 ./constants_mod.o : ./constants_mod.F90 ./definitions_mod.o 

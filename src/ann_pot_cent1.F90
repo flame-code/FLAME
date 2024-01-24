@@ -112,6 +112,12 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(atoms%fat(1,1),3*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    if(trim(ann_arr%event)=='train') then
+        stop 'ERROR: train CENT1 in MPI parallel. something for future!'
+    endif
+    endif
     if(parini%iverbose>=2) call cpu_time(time6)
     call get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,poisson)
     if(parini%iverbose>=2) then
@@ -170,13 +176,6 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     enddo
     enddo
 
-    if(parini%mpi_env%nproc>1) then
-    call fmpi_allreduce(atoms%fat(1,1),3*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    call fmpi_allreduce(atoms%stress(1,1),9,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    if(trim(ann_arr%event)=='train') then
-        stop 'ERROR: train CENT1 in MPI parallel. something for future!'
-    endif
-    endif
 
     deallocate(symfunc%linked_lists%prime_bound)
     deallocate(symfunc%linked_lists%bound_rad)

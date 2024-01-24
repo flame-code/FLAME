@@ -5,15 +5,30 @@ module mod_velocity
     public:: set_velocities
 contains
 !*****************************************************************************************
-subroutine set_velocities(atoms, ekin_arg)
+subroutine set_velocities(atoms,ekin_arg,rng_type)
     use mod_atoms, only: typ_atoms, update_ratp
+    use mod_utils
     implicit none
     type(typ_atoms), intent(inout):: atoms
+    real(8), optional, intent(in):: ekin_arg
+    character(len=50), optional, intent(in):: rng_type
     !local variables
     integer:: i, iat
     real(8):: ekin, sclvel, t1,ekin_target
-    real(8), optional::ekin_arg
-    call random_number(atoms%vat)
+    logical:: only_for_tests
+    only_for_tests=.false.
+    if(present(rng_type)) then
+        if(trim(rng_type)=='only_for_tests') only_for_tests=.true.
+    endif
+    if(only_for_tests) then
+        do iat=1,atoms%nat
+            call random_number_generator_simple(atoms%vat(1,iat))
+            call random_number_generator_simple(atoms%vat(2,iat))
+            call random_number_generator_simple(atoms%vat(3,iat))
+        enddo
+    else
+        call random_number(atoms%vat)
+    endif
     atoms%vat(1:3,1:atoms%nat)=atoms%vat(1:3,1:atoms%nat)-0.5d0
 
     !write(*,*) atoms%vat(1:3,1)
