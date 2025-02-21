@@ -125,9 +125,12 @@ subroutine cal_potential_forces(parini,atoms)
     type(typ_parini), intent(in):: parini
     type(typ_atoms), intent(inout):: atoms
     !local variables
-    integer:: iat
+    integer:: iat, ierr
     real(8), allocatable:: ratred(:,:), rat_backup(:,:)
     !real(8):: time1, time2
+#if defined(MPI)
+    include 'mpif.h'
+#endif
     call f_routine(id='cal_potential_forces')
     allocate(rat_backup(3,atoms%nat))
     call get_rat(atoms,rat_backup)
@@ -137,6 +140,9 @@ subroutine cal_potential_forces(parini,atoms)
         call rxyz_cart2int_alborz(atoms%nat,atoms%cellvec,atoms%ratp,ratred)
         call backtocell_alborz(atoms%nat,atoms%cellvec,ratred)
         call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%ratp)
+        if(parini%mpi_env%nproc>1) then
+        call MPI_BCAST(atoms%ratp,3*atoms%nat,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+        endif
         call update_rat(atoms,upall=.true.)
         deallocate(ratred)
     elseif(trim(atoms%boundcond)=='slab') then
@@ -147,9 +153,13 @@ subroutine cal_potential_forces(parini,atoms)
             ratred(2,iat)=modulo(modulo(ratred(2,iat),1.d0),1.d0)
         enddo
         call rxyz_int2cart_alborz(atoms%nat,atoms%cellvec,ratred,atoms%ratp)
+        if(parini%mpi_env%nproc>1) then
+        call MPI_BCAST(atoms%ratp,3*atoms%nat,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+        endif
         call update_rat(atoms,upall=.true.)
         deallocate(ratred)
     endif
+    call update_ratp(atoms)
     do iat=1,atoms%nat
         atoms%fat(1,iat)=0.d0
         atoms%fat(2,iat)=0.d0

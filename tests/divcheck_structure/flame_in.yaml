@@ -1,0 +1,10 @@
+main:
+  task: ann
+  types: C N
+
+ann:
+  dtol: 1.0
+  normalization: False
+  read_forces: False
+  subtask: check_symmetry_function
+  pickdiffconfs: True

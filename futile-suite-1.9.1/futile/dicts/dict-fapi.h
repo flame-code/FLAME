@@ -74,6 +74,12 @@ character(len = *), intent(in) :: key
 void FC_FUNC_(bind_dict_insert, BIND_DICT_INSERT)(f90_dictionary_pointer *dict, 
                                                   const char *key, 
                                                   int str_ln_1);
+
+void FC_FUNC_(bind_iter_null, BIND_ITER_NULL)(f90_dictionary_pointer *dict);
+
+void FC_FUNC_(bind_iterate,BIND_ITERATE)(f90_dictionary_pointer *dict, 
+                  const f90_dictionary_pointer *val,
+						      int *istat);
 /* bind_dict_iter futile/c-bindings/dictf.f90:140 */
 /* Fortran header:
 subroutine bind_dict_iter(dict, exists)
@@ -287,6 +293,10 @@ void FC_FUNC_(bind_dict_add_int, BIND_DICT_ADD_INT)(f90_dictionary_pointer *dict
 void FC_FUNC_(bind_dict_add_char, BIND_DICT_ADD_CHAR)(f90_dictionary_pointer *dict, 
                                                       const char *val);
 
+ 
+void FC_FUNC_(f_dicts_initialize, F_DICTS_INITIALIZE)();
+
+void FC_FUNC_(f_dicts_finalize, F_DICTS_FINALIZE)();
  /*subroutine bind_dict_add_dict(dict,val)
   use dictionaries
   type(dictionary), pointer :: dict,val*/

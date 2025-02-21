@@ -47,7 +47,6 @@ subroutine get_qat_target(parini)
     stop
     !INITIAL%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     pi = 4.d0*atan(1.d0)
-    ann_arr%trial_energy_required=.false.
     call read_data_yaml(parini,'list_posinp.yaml',atoms_arr,ann_arr=ann_arr)
     call atom_copy_old(atoms_arr%atoms(1),atoms,'atoms_arr%atoms(iconf)->atoms')
     allocate(tmp_rat(3,atoms%nat),tmp_cv(3,3))

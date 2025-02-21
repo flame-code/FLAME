@@ -17,10 +17,10 @@ SHORT_TESTDIRS = testforces_FD \
 				 vibfreq_fourpoints \
 				 train_atombased \
 				 train_CENT1 \
-				 train_CENTT \
 				 saddle_2s_splsad \
 				 saddle_2s_neb \
-				 genconf_gensymcrys
+				 genconf_gensymcrys \
+				 divcheck_structure
 
 if HAVE_SPGLIB
 SHORT_TESTDIRS += minhocao_CENT1 \

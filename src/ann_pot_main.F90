@@ -1,99 +1,5 @@
 !*****************************************************************************************
-subroutine get_fcn_ann(parini,idp,str_dataset,ann_arr,opt_ann,fcn_ann,fcn_ref)
-    use mod_parini, only: typ_parini
-    use mod_ann, only: typ_ann_arr
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
-    use mod_atoms, only: typ_atoms, atom_copy_old, update_ratp, atom_deallocate_old
-    use mod_callback_ann, only: atoms_train=>atoms_train_t
-    use mod_callback_ann, only: symfunc_train=>symfunc_train_t
-    implicit none
-    type(typ_parini), intent(in):: parini
-    integer, intent(in):: idp
-    character(*), intent(in):: str_dataset
-    type(typ_ann_arr), intent(inout):: ann_arr
-    type(typ_opt_ann), intent(inout):: opt_ann
-    real(8), intent(out):: fcn_ann
-    real(8), intent(out):: fcn_ref
-    !local variables
-    type(typ_atoms):: atoms
-    real(8), allocatable:: ann_grad(:,:)
-    integer:: iat, i, j, iconf, ixyz
-    !-----------------------------------------------------------------
-    if(trim(ann_arr%approach)=='atombased') then
-        iconf=idp
-    elseif(trim(ann_arr%approach)=='cent1') then
-        iconf=idp
-    elseif(trim(ann_arr%approach)=='cent2') then
-        iconf=idp
-    elseif(trim(ann_arr%approach)=='centt') then
-        iconf=idp
-    elseif(trim(ann_arr%approach)=='cent3') then
-        iconf=int((idp-1)/3)+1
-        ixyz=mod(idp-1,3)+1
-    elseif(trim(ann_arr%approach)=='tb') then
-        iconf=idp
-    endif
-    !-----------------------------------------------------------------
-    call atom_copy_old(atoms_train%atoms(iconf),atoms,'atoms_train%atoms(iconf)->atoms')
-    call cal_ann_main(parini,atoms,symfunc_train%symfunc(iconf),ann_arr,opt_ann)
-    !-----------------------------------------------------------------
-    allocate(ann_grad(ann_arr%nweight_max,ann_arr%nann),source=0.d0)
-    if(trim(ann_arr%approach)=='atombased') then
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-    elseif(trim(ann_arr%approach)=='cent1') then
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-    elseif(trim(ann_arr%approach)=='cent2') then
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                !ann_grad(j,i)=ann_grad(j,i)+atoms%qat(iat)*ann_arr%g_per_atom(j,iat)
-                ann_grad(j,i)=ann_grad(j,i)+ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-    elseif(trim(ann_arr%approach)=='centt') then
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+(atoms%zat(iat)+atoms%qat(iat))*ann_arr%g_per_atom(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-    elseif(trim(ann_arr%approach)=='cent3') then
-        call update_ratp(atoms)
-        do iat=1,atoms%nat
-            i=atoms%itypat(iat)
-            do j=1,ann_arr%nweight_max
-                ann_grad(j,i)=ann_grad(j,i)+(atoms%ratp(ixyz,iat))*ann_arr%dqat_weights(j,iat)
-            enddo
-        enddo
-        call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
-    endif
-    deallocate(ann_grad)
-    !-----------------------------------------------------------------
-    if(trim(ann_arr%approach)=='cent3') then
-        fcn_ann=atoms%dpm(ixyz)
-        fcn_ref=atoms_train%atoms(iconf)%dpm(ixyz)
-        write(*,'(a,2f10.3)') 'fcn_ann,fcn_ref ',fcn_ann,fcn_ref
-    else
-        fcn_ann=atoms%epot
-        fcn_ref=atoms_train%atoms(iconf)%epot
-    endif
-    call atom_deallocate_old(atoms)
-end subroutine get_fcn_ann
-!*****************************************************************************************
+!IMPORTANT: opt_ann should not be passed, for the moment, it is passed because of cal_ann_tb
 subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     use mod_tightbinding, only: typ_partb
     use mod_parini, only: typ_parini
@@ -122,29 +28,13 @@ subroutine cal_ann_main(parini,atoms,symfunc,ann_arr,opt_ann)
     elseif(trim(ann_arr%approach)=='cent2') then
         call cent2%cal_ann_cent2(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='centt') then
+        stop 'ERROR: FLAME stops because cal_ann_centt is not tested for years!'
         call cal_ann_centt(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='cent3') then
+        stop 'ERROR: FLAME stops because cal_ann_cent3 is not tested for years!'
         call cal_ann_cent3(parini,atoms,symfunc,ann_arr)
     elseif(trim(ann_arr%approach)=='tb') then
         call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
-        !if(trim(ann_arr%event)=='train') then
-        ! E0=atoms%epot
-        ! allocate(xt(opt_ann%n),gt(opt_ann%n))
-        ! xt(1:opt_ann%n)=opt_ann%x(1:opt_ann%n)
-        ! gt(1:opt_ann%n)=ann_grad(1:opt_ann%n)
-        ! do i=1,opt_ann%n
-        !     g_tb=gt(i)
-        !     !!Finite difference 
-        !     dis=1.d-4 !*abs(opt_ann%x(i))
-        !     opt_ann%x(i)=opt_ann%x(i)+dis
-        !     call cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
-        !     E1=atoms%epot
-        !     g=(E1-E0)/dis
-        !     write(*,'(a,2es19.10,es14.5,2es19.10)') 'FD-TEST',g_tb,g,g-g_tb,E0,E1
-        !     opt_ann%x(i)=xt(i)
-        ! enddo
-        ! stop 'TTTTTTTTTTTTTTTT'
-        !endif
     else
         write(*,'(2a)') 'ERROR: unknown approach in ANN, ',trim(ann_arr%approach)
         stop
@@ -155,7 +45,7 @@ subroutine prefit_cent_ener_ref(parini,ann_arr,symfunc_train,symfunc_valid,atoms
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none
@@ -239,7 +129,7 @@ subroutine prefit_cent(parini,ann_arr,symfunc_train,symfunc_valid,atoms_train,at
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_symfunc, only: typ_symfunc_arr
-    use mod_opt_ann, only: typ_opt_ann, convert_opt_x_ann_arr
+    use mod_opt_ann, only: typ_opt_ann
     use mod_atoms, only: typ_atoms, typ_atoms_arr, atom_copy_old
     use dynamic_memory
     implicit none

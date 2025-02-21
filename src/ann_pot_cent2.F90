@@ -8,8 +8,6 @@ module mod_cent2
         private
         integer:: nbf
         integer:: nbgx, nbgy, nbgz
-        real(8), allocatable:: rho_n_all(:,:,:,:)
-        real(8), allocatable:: rho_e_all(:,:,:,:)
         real(8), allocatable:: gwn(:)
         real(8), allocatable:: gwz(:)
         real(8), allocatable:: bz(:)
@@ -24,6 +22,7 @@ module mod_cent2
         real(8), allocatable:: re(:,:)
         real(8), allocatable:: rn(:,:)
         integer, allocatable:: imap(:)
+        integer, allocatable:: ibf_list_s(:)
         character(2), allocatable:: bt(:)
         contains
         procedure, private, pass(self):: init_bf
@@ -33,10 +32,9 @@ module mod_cent2
     type typ_cent2
         private
         integer:: nbgx, nbgy, nbgz
-        logical:: amat_is_calculated=.false.
         real(8), allocatable:: amat(:,:)
-        real(8), allocatable:: rho_tmp(:,:,:)
-        real(8), allocatable:: rho_e(:,:,:)
+        real(8), allocatable:: amat_t(:,:)
+        real(8), allocatable:: cep_rhs(:)
         real(8), allocatable:: rho_n(:,:,:)
         real(8), allocatable:: gausswidth_tmp(:)
         type(typ_bf):: bf
@@ -46,16 +44,16 @@ module mod_cent2
         procedure, public, pass(self):: fini_cent2
         procedure, private, pass(self):: init_electrostatic_cent2
         procedure, private, pass(self):: fini_electrostatic_cent2
-        procedure, private, pass(self):: get_amat_cent2
-        procedure, private, pass(self):: get_pot_ionic
+        procedure, private, pass(self):: get_amat_cent2_analytic
         procedure, private, pass(self):: get_eigenval
         procedure, private, pass(self):: get_expansion_coeff
-        procedure, private, pass(self):: grid_segment2entire
-        procedure, private, pass(self):: get_energy_external_pot
         procedure, private, pass(self):: get_qat_from_chi_dir_cent2
+        procedure, private, pass(self):: get_cep_rhs
         procedure, private, pass(self):: cal_electrostatic_ann_cent2
         procedure, private, pass(self):: cal_cent2_energy
-        procedure, private, pass(self):: cal_etrial_cent2
+        procedure, private, pass(self):: cent2_ehartree_analytic
+        procedure, private, pass(self):: cent2_ehartree_analytic_monopole
+        !procedure, private, pass(self):: cent2_ehartree_analytic_test
         procedure, private, pass(self):: reverseCEP
         procedure, private, pass(self):: prefit_cent2
         procedure, public, pass(self):: cal_ann_cent2
@@ -95,7 +93,6 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     !if(parini%mpi_env%iproc==0) then
     !    write(*,*) 'ICALL= ',icall
     !endif
-    self%amat_is_calculated=.false.
     call update_ratp(atoms)
     call self%init_cent2(parini,ann_arr,atoms,poisson)
     if(parini%iverbose>=2) call cpu_time(time1)
@@ -133,23 +130,23 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
     enddo over_iat
     if(parini%iverbose>=2) call cpu_time(time3)
     call self%calc_atomic_densities(parini,atoms,ann_arr,poisson)
-    call self%get_pot_ionic(parini,atoms,poisson)
     if(parini%iverbose>=2) call cpu_time(time4)
     if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: two routines: ',time4-time3
+    call self%get_amat_cent2_analytic(parini,ann_arr,atoms)
+    self%amat=self%amat_t
+    if(parini%prefit_ann) then
+        ann_arr%chi_o=0.d0
+    endif
+    call self%get_cep_rhs(parini,ann_arr,atoms,poisson)
+    !do iat=1,(atoms%nat+1)*(atoms%nat+1)
+    !    write(91,'(i5,f15.7)') iat,ann_arr%a(iat)
+    !enddo
     if(parini%prefit_ann) then
         call self%prefit_cent2(parini,ann_arr,atoms,poisson)
     endif
+    call self%get_eigenval(parini,atoms)
     if(parini%iverbose>=2) call cpu_time(time5)
     if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: prefit_cent2: ',time5-time4
-    if(.not. self%amat_is_calculated) then
-        call self%get_amat_cent2(parini,ann_arr,atoms,poisson)
-        !do iat=1,(atoms%nat+1)*(atoms%nat+1)
-        !    write(91,'(i5,f15.7)') iat,ann_arr%a(iat)
-        !enddo
-    endif
-    call self%get_eigenval(parini,atoms)
-    if(parini%iverbose>=2) call cpu_time(time6)
-    if(parini%iverbose>=2) write(*,'(a,f8.2)') 'time: get_amat_cent2: ',time6-time5
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     call self%get_qat_from_chi_dir_cent2(parini,ann_arr,atoms,poisson,self%amat)
@@ -231,6 +228,8 @@ subroutine cal_ann_cent2(self,parini,atoms,symfunc,ann_arr)
         deallocate(ann_arr%stresspq)
     endif
     deallocate(self%amat)
+    deallocate(self%amat_t)
+    deallocate(self%cep_rhs)
     deallocate(ann_arr%ipiv)
     call symfunc%fini_symfunc()
     call self%fini_cent2(parini,ann_arr,atoms,poisson)
@@ -269,6 +268,8 @@ subroutine init_cent2(self,parini,ann_arr,atoms,poisson)
         ann_arr%chi_d=0.d0
     endif
     allocate(self%amat((self%bf%nbf+1),(self%bf%nbf+1)))
+    allocate(self%amat_t((self%bf%nbf+1),(self%bf%nbf+1)))
+    allocate(self%cep_rhs((self%bf%nbf+1)))
     if(.not. (trim(parini%task)=='ann' .and. trim(parini%subtask_ann)=='train')) then
         allocate(ann_arr%qq(1:self%bf%nbf+1))
     endif
@@ -300,8 +301,6 @@ subroutine init_bf(self,nbgx,nbgy,nbgz,nat)
     self%nbgx=nbgx
     self%nbgy=nbgy
     self%nbgz=nbgz
-    allocate(self%rho_e_all(-nbgx:nbgx,-nbgy:nbgy,-nbgz:nbgz,self%nbf))
-    allocate(self%rho_n_all(-nbgx:nbgx,-nbgy:nbgy,-nbgz:nbgz,nat))
     allocate(self%gwn(nat))
     allocate(self%qcore(nat))
     allocate(self%rn(3,nat))
@@ -317,14 +316,13 @@ subroutine init_bf(self,nbgx,nbgy,nbgz,nat)
     allocate(self%orb(self%nbf))
     allocate(self%re(3,self%nbf))
     allocate(self%bt(self%nbf))
+    allocate(self%ibf_list_s(nat))
 end subroutine init_bf
 !*****************************************************************************************
 subroutine fini_bf(self)
     implicit none
     class(typ_bf), intent(inout):: self
     !local variables
-    deallocate(self%rho_e_all)
-    deallocate(self%rho_n_all)
     deallocate(self%gwn)
     deallocate(self%qcore)
     deallocate(self%gwz)
@@ -340,6 +338,7 @@ subroutine fini_bf(self)
     deallocate(self%rn)
     deallocate(self%re)
     deallocate(self%bt)
+    deallocate(self%ibf_list_s)
 end subroutine fini_bf
 !*****************************************************************************************
 subroutine set_param(self,atoms,ann_arr)
@@ -362,9 +361,11 @@ subroutine set_param(self,atoms,ann_arr)
         self%rn(1:3,iat)=atoms%ratp(1:3,iat)
     enddo
     do ibf=1,self%nbf
-        self%imap(ibf)=modulo(ibf-1,self%nbf/4)+1
+        iat=modulo(ibf-1,self%nbf/4)+1
+        self%imap(ibf)=iat
         if((4*(ibf-1))/self%nbf==0) then
             self%bt(ibf)='s'
+            self%ibf_list_s(iat)=ibf
         elseif((4*(ibf-1))/self%nbf==1) then
             self%bt(ibf)='px'
         elseif((4*(ibf-1))/self%nbf==2) then
@@ -383,13 +384,14 @@ subroutine set_param(self,atoms,ann_arr)
             self%gwe_s(iat)=ann_arr%ann(atoms%itypat(iat))%gwe_s
             self%be_s(iat)=ann_arr%ann(atoms%itypat(iat))%be_s
             self%orb(ibf)=1.d0
+            self%hardness(ibf)=ann_arr%ann(atoms%itypat(iat))%hardness
         endif
         if(bt_t(1:1)=='p') then
             self%gwe_p(1,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(1)
             self%gwe_p(2,iat)=ann_arr%ann(atoms%itypat(iat))%gwe_p(2)
             self%orb(ibf)=0.d0
+            self%hardness(ibf)=1.d-1*ann_arr%ann(atoms%itypat(iat))%hardness
         endif
-        self%hardness(ibf)=ann_arr%ann(atoms%itypat(iat))%hardness
         self%re(1,ibf)=atoms%ratp(1,iat)
         self%re(2,ibf)=atoms%ratp(2,iat)
         self%re(3,ibf)=atoms%ratp(3,iat)
@@ -415,91 +417,6 @@ subroutine calc_atomic_densities(self,parini,atoms,ann_arr,poisson)
     real(8):: ggw, ggw_t, alpha, beta, q_tmp(1), p_tmp(3), tt, ttx, tty, ttz
     real(8):: a1, a2, a3, b1, b2 !, b3
     !character(2):: bt_t
-    do ibf=1,self%bf%nbf
-        agpx=int(self%bf%re(1,ibf)/poisson%hgrid(1,1))+self%bf%nbgx+0
-        agpy=int(self%bf%re(2,ibf)/poisson%hgrid(2,2))+self%bf%nbgy+0
-        agpz=int(self%bf%re(3,ibf)/poisson%hgrid(3,3))+self%bf%nbgz+0
-        !bt_t=self%bf%bt(ibf)
-        iat=self%bf%imap(ibf)
-        itypat=atoms%itypat(iat)
-        if(trim(self%bf%bt(ibf))=='s') then
-        !a1=self%bf%gwe_s(iat)
-        !a2=self%bf%be_s(iat)
-        !b1= a1**3/(a1**3-a2**3)
-        !b2=-a2**3/(a1**3-a2**3)
-        q_tmp(1)=1.d0*self%bf%be_s(iat)
-        call put_gto_sym_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),q_tmp,self%bf%gwe_s(iat), &
-            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        q_tmp(1)=1.d0*(1.d0-self%bf%be_s(iat))
-        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),q_tmp,self%bf%gwe_s(iat), &
-            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
-        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
-        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
-            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
-        enddo
-        enddo
-        enddo
-        elseif(trim(self%bf%bt(ibf))=='px') then
-        p_tmp=0.d0
-        a1=self%bf%gwe_p(1,iat)
-        a2=self%bf%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
-        b1= a1**5/(a1**5-a2**5)
-        b2=-a2**5/(a1**5-a2**5)
-        p_tmp(1)=1.d0 !*b1
-        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),p_tmp,a1, &
-            6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        !p_tmp(1)=1.d0*b2
-        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),p_tmp,a2, &
-        !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
-        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
-        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
-            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
-        enddo
-        enddo
-        enddo
-        elseif(trim(self%bf%bt(ibf))=='py') then
-        p_tmp=0.d0
-        a1=self%bf%gwe_p(1,iat)
-        a2=self%bf%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
-        b1= a1**5/(a1**5-a2**5)
-        b2=-a2**5/(a1**5-a2**5)
-        p_tmp(2)=1.d0 !*b1
-        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),p_tmp,a1, &
-            6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        !p_tmp(2)=1.d0*b2
-        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),p_tmp,a2, &
-        !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
-        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
-        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
-            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
-        enddo
-        enddo
-        enddo
-        elseif(trim(self%bf%bt(ibf))=='pz') then
-        p_tmp=0.d0
-        a1=self%bf%gwe_p(1,iat)
-        a2=self%bf%gwe_p(2,iat)  !*ann_arr%ann(itypat)%gw_contract_ratio_p ! 0.80d0
-        b1= a1**5/(a1**5-a2**5)
-        b2=-a2**5/(a1**5-a2**5)
-        p_tmp(3)=1.d0 !*b1
-        call put_gto_p_ortho(parini,poisson%bc,.true.,1,self%bf%re(1,ibf),p_tmp,a1, &
-            6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        !p_tmp(3)=1.d0*b2
-        !call put_gto_p_ortho(parini,poisson%bc,.false.,1,self%bf%re(1,ibf),p_tmp,a2, &
-        !    6.d0*a2,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
-        do iz=agpz-self%bf%nbgz,agpz+self%bf%nbgz
-        do iy=agpy-self%bf%nbgy,agpy+self%bf%nbgy
-        do ix=agpx-self%bf%nbgx,agpx+self%bf%nbgx
-            self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)=poisson%rho(ix,iy,iz)
-        enddo
-        enddo
-        enddo
-        endif
-    enddo
-
     poisson%rho(:,:,:)=0.d0
     do iat=1,atoms%nat
         !agpx=int(atoms%ratp(1,iat)/poisson%hgrid(1,1))+self%bf%nbgx+0
@@ -573,15 +490,13 @@ subroutine init_electrostatic_cent2(self,parini,atoms,ann_arr,poisson)
         if(parini%iverbose>=2) call cpu_time(time2)
         if(parini%iverbose>=2) write(*,*) 'init_hartree_time: ',time2-time1
         max_cellVec=100.d0
-        if(maxval(atoms%cellvec)>max_cellVec) then
-            stop 'ERROR: atoms%cellvec > max_cellVec'
-        endif
+        !if(maxval(atoms%cellvec)>max_cellVec) then
+        !    stop 'ERROR: atoms%cellvec > max_cellVec'
+        !endif
         if(parini%iverbose>=2) call cpu_time(time1)
         if(.not. ann_arr%linear_rho_pot_initiated) then
             ann_arr%linear_rho_pot_initiated=.true. 
         endif
-        allocate(self%rho_tmp(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-        allocate(self%rho_e(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         allocate(self%rho_n(poisson%ngpx,poisson%ngpy,poisson%ngpz))
         self%nbgx=int(poisson%rgcut/poisson%hgrid(1,1))+2
         self%nbgy=int(poisson%rgcut/poisson%hgrid(2,2))+2
@@ -594,111 +509,314 @@ subroutine init_electrostatic_cent2(self,parini,atoms,ann_arr,poisson)
     endif
 end subroutine init_electrostatic_cent2
 !*****************************************************************************************
-subroutine get_pot_ionic(self,parini,atoms,poisson)
+subroutine get_amat_cent2_analytic(self,parini,ann_arr,atoms)
     use mod_parini, only: typ_parini
     use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
-    implicit none
-    class(typ_cent2), intent(inout):: self
-    type(typ_parini), intent(in):: parini
-    type(typ_atoms), intent(inout):: atoms
-    type(typ_poisson), intent(inout):: poisson
-    !local variables
-    integer:: iat
-    integer:: agpx, agpy, agpz, ix, iy, iz
-    real(8):: tt
-    allocate(poisson%pot_ion(poisson%ngpx,poisson%ngpy,poisson%ngpz))
-    if(atoms%nat/=size(self%bf%gwn)) stop 'ERROR: inconsistency in length of ionic charges'
-    poisson%rho=self%rho_n
-    call get_hartree(parini,poisson,atoms,self%gausswidth_tmp,tt)
-    poisson%pot_ion=poisson%pot
-end subroutine get_pot_ionic
-!*****************************************************************************************
-subroutine get_amat_cent2(self,parini,ann_arr,atoms,poisson)
-    use mod_parini, only: typ_parini
-    use mod_atoms, only: typ_atoms
-    use mod_electrostatics, only: typ_poisson
     use mod_ann, only: typ_ann_arr
     implicit none
     class(typ_cent2), intent(inout):: self
     type(typ_parini), intent(in):: parini
     type(typ_ann_arr), intent(in):: ann_arr
     type(typ_atoms), intent(in):: atoms
-    type(typ_poisson), intent(inout):: poisson
     !local variables
-    integer:: ibf, jbf
-    real(8):: tt
-    real(8), allocatable:: gausswidth(:)
-    allocate(gausswidth(atoms%nat))
+    integer:: ibf, jbf, iat, jat, ierr
+    real(8):: pati(3), patj(3)
+    real(8):: e_qr0_qr0, e_qr2_qr2, e_qr0_i_qr2_j, e_qr0_j_qr2_i, e_qr0_i_pr1_j
+    real(8):: e_qr2_i_pr1_j, e_qr0_j_pr1_i, e_qr2_j_pr1_i
+    real(8):: gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwr0_jat
+    real(8):: gwr2_jat, gwp1_jat, qr0_jat, qr2_jat, gwr0, gwr2, gwp1, qr0, qr2
+    real(8):: pi_dot_pi
+    real(8):: dx, dy, dz, r, pi, tt
+    real(8):: ss1, ss2, ss3, gg1, gg2, gg3, tt1, tt2, tt3
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    character(2):: bt_i, bt_j
+    pi=4.d0*atan(1.d0)
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+
+    self%amat_t=0.d0
     do ibf=1,self%bf%nbf
-        call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
-        poisson%pot=0.d0
-        call get_hartree(parini,poisson,atoms,gausswidth,tt)
-        do jbf=1,ibf
-            call self%get_energy_external_pot(atoms,jbf,poisson,tt)
-            self%amat(ibf,jbf)=tt
-            self%amat(jbf,ibf)=self%amat(ibf,jbf)
+        iat=self%bf%imap(ibf)
+        !itypat=atoms%itypat(iat)
+        bt_i=self%bf%bt(ibf)
+        if(trim(self%bf%bt(ibf))=='s') then
+        elseif(trim(self%bf%bt(ibf))=='px') then
+            pati(1)=1.d0 ; pati(2)=0.d0 ; pati(3)=0.d0
+        elseif(trim(self%bf%bt(ibf))=='py') then
+            pati(1)=0.d0 ; pati(2)=1.d0 ; pati(3)=0.d0
+        elseif(trim(self%bf%bt(ibf))=='pz') then
+            pati(1)=0.d0 ; pati(2)=0.d0 ; pati(3)=1.d0
+        endif
+        gwr0=self%bf%gwe_s(iat)
+        gwr2=gwr0
+        gwp1=self%bf%gwe_p(1,iat)
+        qr0=self%bf%be_s(iat)
+        qr2=(1.d0-self%bf%be_s(iat))
+
+        if(bt_i(1:1)=='s') then
+        !self-interaction of qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwr0**2*sf_3**2)
+        tt=0.5d0*2.d0*qr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qr2-qr2 interaction
+        gg1=gwr2*sf_1
+        gg2=gwr2*sf_2
+        gg3=gwr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*gg1**2+9.d0*gg1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*gg2**2+9.d0*gg2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*gg3**2+9.d0*gg3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg3**2)**2.5d0)
+        tt=tt+0.5d0*qr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        tt=tt+1.d0*qr0*qr2*(a*ss1+b*ss2+c*ss3)
+        else
+        !self-interaction of pr1-pr1 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwp1**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwp1**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwp1**2*sf_3**2)
+        pi_dot_pi=pati(1)**2+pati(2)**2+pati(3)**2
+        tt=0.5d0*4.d0*pi_dot_pi*(a*tt1**3+b*tt2**3+c*tt3**3)/(3.d0*sqrt(pi))
+        endif
+        self%amat_t(ibf,ibf)=2.d0*tt
+        do jbf=1,ibf-1
+            jat=self%bf%imap(jbf)
+            bt_j=self%bf%bt(jbf)
+            if(trim(self%bf%bt(jbf))=='s') then
+            elseif(trim(self%bf%bt(jbf))=='px') then
+                patj(1)=1.d0 ; patj(2)=0.d0 ; patj(3)=0.d0
+            elseif(trim(self%bf%bt(jbf))=='py') then
+                patj(1)=0.d0 ; patj(2)=1.d0 ; patj(3)=0.d0
+            elseif(trim(self%bf%bt(jbf))=='pz') then
+                patj(1)=0.d0 ; patj(2)=0.d0 ; patj(3)=1.d0
+            endif
+            dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+            dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+            dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+            r=sqrt(dx**2+dy**2+dz**2)
+            gwr0_iat=self%bf%gwe_s(iat)
+            gwr2_iat=gwr0_iat
+            gwp1_iat=self%bf%gwe_p(1,iat)
+            qr0_iat=self%bf%be_s(iat)
+            qr2_iat=(1.d0-self%bf%be_s(iat))
+            gwr0_jat=self%bf%gwe_s(jat)
+            gwr2_jat=gwr0_jat
+            gwp1_jat=self%bf%gwe_p(1,jat)
+            qr0_jat=self%bf%be_s(jat)
+            qr2_jat=(1.d0-self%bf%be_s(jat))
+            if(bt_i(1:1)=='s' .and. bt_j(1:1)=='s') then
+                !-----------------------------------------------------------------------
+                !qr0-qr0 interaction
+                e_qr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwr0_jat,qr0_iat,qr0_jat)
+                !-----------------------------------------------------------------------
+                !qr2-qr2 interaction
+                e_qr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwr2_jat,qr2_iat,qr2_jat)
+                !-----------------------------------------------------------------------
+                !qr0-qr2 interaction
+                e_qr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwr2_jat,qr0_iat,qr2_jat)
+                e_qr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwr2_iat,qr0_jat,qr2_iat)
+                tt=e_qr0_qr0+e_qr2_qr2+e_qr0_i_qr2_j+e_qr0_j_qr2_i
+            elseif(bt_i(1:1)=='p' .and. bt_j(1:1)=='p' .and. iat/=jat) then
+                tt=get_ener_pr1_pr1(a,b,c,dx,dy,dz,r,sfs,gwp1_iat,gwp1_jat,pati,patj)
+            elseif(iat/=jat) then
+                if(bt_i(1:1)=='s') then
+                    !-----------------------------------------------------------------------
+                    !qr0-pr1 interaction
+                    e_qr0_i_pr1_j=get_ener_qr0_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr0_iat,gwp1_jat,qr0_iat,patj)
+                    !-----------------------------------------------------------------------
+                    !pr1-qr2 interaction
+                    e_qr2_i_pr1_j=get_ener_qr2_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr2_iat,gwp1_jat,qr2_iat,patj)
+                    tt=e_qr0_i_pr1_j+e_qr2_i_pr1_j
+                else
+                    !-----------------------------------------------------------------------
+                    !qr0-pr1 interaction
+                    e_qr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwr0_jat,gwp1_iat,qr0_jat,pati)
+                    !-----------------------------------------------------------------------
+                    !pr1-qr2 interaction
+                    e_qr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwr2_jat,gwp1_iat,qr2_jat,pati)
+                    tt=e_qr0_j_pr1_i+e_qr2_j_pr1_i
+                    !write(*,*) gwr0_jat,gwp1_iat,qr0_jat,pati
+                    !write(*,*) gwr2_jat,gwp1_iat,qr2_jat,pati
+                    !write(*,'(a,2i4,2es24.15)') 'PPP ',ibf,jbf,e_qr0_j_pr1_i,e_qr2_j_pr1_i
+                endif
+            else
+                tt=0.d0
+            endif
+            !write(*,'(a,2i4,es24.15,2(1x,a2))') 'AMAT ',ibf,jbf,tt,trim(self%bf%bt(ibf)),trim(self%bf%bt(jbf))
+            self%amat_t(ibf,jbf)=tt
+            self%amat_t(jbf,ibf)=self%amat_t(ibf,jbf)
         enddo
-        self%amat(ibf,ibf)=self%amat(ibf,ibf)+self%bf%hardness(ibf)
-        self%amat(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
-        self%amat(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
+        self%amat_t(ibf,ibf)=self%amat_t(ibf,ibf)+self%bf%hardness(ibf)
+        self%amat_t(ibf,self%bf%nbf+1)=self%bf%orb(ibf)
+        self%amat_t(self%bf%nbf+1,ibf)=self%bf%orb(ibf)
     enddo !end of loop over ibf
-    self%amat(self%bf%nbf+1,self%bf%nbf+1)=0.d0
-    deallocate(gausswidth)
-    self%amat_is_calculated=.true.
-end subroutine get_amat_cent2
+    self%amat_t(self%bf%nbf+1,self%bf%nbf+1)=0.d0
+    !if(parini%mpi_env%iproc==0) then
+    !do ibf=1,self%bf%nbf
+    !    do jbf=1,self%bf%nbf
+    !        write(27,'(f10.5)',advance='no') self%amat_t(ibf,jbf)
+    !    enddo
+    !write(27,*)
+    !enddo
+    !do jbf=1,self%bf%nbf
+    !do ibf=1,self%bf%nbf
+    !iat=self%bf%imap(ibf)
+    !jat=self%bf%imap(jbf)
+    !write(*,'(a,2i4,2es24.15,es14.5,2i4)') 'AMAT ',ibf,jbf,self%amat(ibf,jbf), &
+    !    self%amat_t(ibf,jbf),abs(self%amat(ibf,jbf)-self%amat_t(ibf,jbf)),iat,jat
+    !enddo
+    !enddo
+    !write(*,'(a,es14.5)') 'AMAT DIFF ',maxval(abs(self%amat-self%amat_t))
+    !endif
+    !call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+end subroutine get_amat_cent2_analytic
 !*****************************************************************************************
-subroutine grid_segment2entire(self,reset,ibf,xyz,pref,poisson)
-    use mod_electrostatics, only: typ_poisson
-    implicit none
-    class(typ_cent2), intent(inout):: self
-    logical, intent(in):: reset
-    integer, intent(in):: ibf 
-    real(8), intent(in):: xyz(3)
-    real(8), intent(in):: pref
-    type(typ_poisson), intent(inout):: poisson
-    !local variables
-    integer:: ix, iy, iz
-    integer:: agpx, agpy, agpz 
-    if(reset) poisson%rho=0.d0
-    agpx=int(xyz(1)/poisson%hgrid(1,1))+self%nbgx+0
-    agpy=int(xyz(2)/poisson%hgrid(2,2))+self%nbgy+0
-    agpz=int(xyz(3)/poisson%hgrid(3,3))+self%nbgz+0
-    do iz=agpz-self%nbgz,agpz+self%nbgz
-    do iy=agpy-self%nbgy,agpy+self%nbgy
-    do ix=agpx-self%nbgx,agpx+self%nbgx
-        poisson%rho(ix,iy,iz)=poisson%rho(ix,iy,iz)+pref*self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,ibf)
-    enddo
-    enddo
-    enddo
-end subroutine grid_segment2entire
-!*****************************************************************************************
-subroutine get_energy_external_pot(self,atoms,jbf,poisson,energy)
+subroutine get_cep_rhs(self,parini,ann_arr,atoms,poisson)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
     use mod_electrostatics, only: typ_poisson
+    use mod_flm_futile
     implicit none
     class(typ_cent2), intent(inout):: self
-    type(typ_atoms), intent(in):: atoms
-    integer, intent(in):: jbf 
-    type(typ_poisson), intent(in):: poisson
-    real(8), intent(out):: energy
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(inout):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    type(typ_poisson), intent(inout):: poisson
     !local variables
-    integer:: ix, iy, iz
-    integer:: agpx, agpy, agpz 
-    real(8):: tt
-    agpx=int(self%bf%re(1,jbf)/poisson%hgrid(1,1))+self%nbgx+0
-    agpy=int(self%bf%re(2,jbf)/poisson%hgrid(2,2))+self%nbgy+0
-    agpz=int(self%bf%re(3,jbf)/poisson%hgrid(3,3))+self%nbgz+0
-    tt=0.d0
-    do iz=agpz-self%nbgz,agpz+self%nbgz
-    do iy=agpy-self%nbgy,agpy+self%nbgy
-    do ix=agpx-self%nbgx,agpx+self%nbgx
-        tt=tt+self%bf%rho_e_all(ix-agpx,iy-agpy,iz-agpz,jbf)*poisson%pot(ix,iy,iz)
+    integer:: info, iat, jat, ibf, ierr
+    real(8):: tt, one, ttt, p(3)
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    real(8):: e_qr0_qcr0, e_qcr0_j_pr1_i, e_qr2_qcr2, e_qcr0_j_qr2_i
+    real(8):: e_qr0_i_qcr2_j, e_qcr2_j_pr1_i
+    real(8):: gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwcr0_jat, gwcr2_jat, qcr0_jat, qcr2_jat
+    real(8):: gwcr0, gwcr2, qcr0, qcr2, gwr0, gwr2, qr0, qr2
+    real(8):: gg1, gg2, gg3, hh1, hh2, hh3, ss1, ss2, ss3, tt1, tt2, tt3
+    real(8):: dx, dy, dz, r, pi
+    character(2):: bt_t
+    pi=4.d0*atan(1.d0)
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        gwr0_iat=self%bf%gwe_s(iat)
+        gwr2_iat=gwr0_iat
+        gwp1_iat=self%bf%gwe_p(1,iat)
+        qr0_iat=1.d0*self%bf%be_s(iat)
+        qr2_iat=1.d0*(1.d0-self%bf%be_s(iat))
+        p(1)=0.d0 ; p(2)=0.d0 ; p(3)=0.d0
+        bt_t=self%bf%bt(ibf)
+        if(bt_t=='px') p(1)=1.d0
+        if(bt_t=='py') p(2)=1.d0
+        if(bt_t=='pz') p(3)=1.d0
+        ttt=0.d0
+        do jat=1,atoms%nat
+        if(jat==iat) cycle
+        gwcr0_jat=self%bf%gwc(jat)
+        gwcr2_jat=self%bf%gwc(jat)
+        qcr0_jat=self%bf%qcore(jat)*self%bf%bc(jat)
+        qcr2_jat=self%bf%qcore(jat)*(1.d0-self%bf%bc(jat))
+        !-----------------------------------------------------------------------
+        dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+        dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+        dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+        r=sqrt(dx**2+dy**2+dz**2)
+        if(bt_t(1:1)=='s') then
+        !qcr0-qr0 interaction
+        e_qr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwcr0_jat,qr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr2-qr2 interaction
+        e_qr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwcr2_jat,qr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qr2 interaction
+        e_qcr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwr2_iat,qcr0_jat,qr2_iat)
+        !-----------------------------------------------------------------------
+        !qr0-qcr2 interaction
+        e_qr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwcr2_jat,qr0_iat,qcr2_jat)
+        ttt=ttt+e_qr0_qcr0+e_qr2_qcr2+e_qcr0_j_qr2_i+e_qr0_i_qcr2_j
+        else
+        !qcr0-pr1 interaction
+        e_qcr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwcr0_jat,gwp1_iat,qcr0_jat,p)
+        !-----------------------------------------------------------------------
+        !pr1-qcr2 interaction
+        e_qcr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwcr2_jat,gwp1_iat,qcr2_jat,p)
+        ttt=ttt+e_qcr0_j_pr1_i+e_qcr2_j_pr1_i
+        endif
+        !-----------------------------------------------------------------------
+        enddo
+        if(bt_t(1:1)=='s') then
+        gwcr0=self%bf%gwc(iat)
+        gwcr2=self%bf%gwc(iat)
+        qcr0=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        gwr0=self%bf%gwe_s(iat)
+        gwr2=gwr0
+        qr0=1.d0*self%bf%be_s(iat)
+        qr2=1.d0*(1.d0-self%bf%be_s(iat))
+        gg1=gwr2*sf_1
+        gg2=gwr2*sf_2
+        gg3=gwr2*sf_3
+        hh1=gwcr2*sf_1
+        hh2=gwcr2*sf_2
+        hh3=gwcr2*sf_3
+        !self-interaction of qcr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_3**2)
+        ttt=ttt+1.0d0*2.d0*qcr0*qr0*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qr2 interaction
+        ss1=(2.d0*sf_1*(3.d0+5.d0*(hh1**2+gg1**2)+2.0d0*(hh1**4+gg1**4)+5.d0*hh1**2*gg1**2))/(3.d0*sqrt(pi)*(1.d0+hh1**2+gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+5.d0*(hh2**2+gg2**2)+2.0d0*(hh2**4+gg2**4)+5.d0*hh2**2*gg2**2))/(3.d0*sqrt(pi)*(1.d0+hh2**2+gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+5.d0*(hh3**2+gg3**2)+2.0d0*(hh3**4+gg3**4)+5.d0*hh3**2*gg3**2))/(3.d0*sqrt(pi)*(1.d0+hh3**2+gg3**2)**2.5d0)
+        ttt=ttt+1.0d0*qcr2*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ttt=ttt+1.d0*qcr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ttt=ttt+1.d0*qr0*qcr2*(a*ss1+b*ss2+c*ss3)
+        endif
+        !if(parini%mpi_env%iproc==0) then
+        !write(*,'(i4,2f20.10,es14.5)') ibf,tt,ttt,ttt-tt
+        !endif
+        bt_t=self%bf%bt(ibf)
+        if(bt_t(1:1)=='s') then
+            self%cep_rhs(ibf)=-(atoms%zat(iat)+self%bf%qcore(iat))*self%bf%hardness(ibf)-ttt
+        else
+            self%cep_rhs(ibf)=-ttt
+        endif
     enddo
-    enddo
-    enddo
-    energy=tt*poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3)
-end subroutine get_energy_external_pot
+!    stop
+end subroutine get_cep_rhs
 !*****************************************************************************************
 subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     use mod_parini, only: typ_parini
@@ -714,27 +832,79 @@ subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     type(typ_poisson), intent(inout):: poisson
     real(8), intent(in):: amat(self%bf%nbf+1,self%bf%nbf+1)
     !local variables
-    integer:: info, iat, ibf
-    real(8):: tt, one
-    real(8), allocatable:: a(:,:)
-    allocate(a(self%bf%nbf+1,self%bf%nbf+1))
+    integer:: info, iat, jat, ibf, ierr
+    real(8):: tt, one, ttt, p(3)
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    real(8):: e_qr0_qcr0, e_qcr0_j_pr1_i, e_qr2_qcr2, e_qcr0_j_qr2_i
+    real(8):: e_qr0_i_qcr2_j, e_qcr2_j_pr1_i
+    real(8):: gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwcr0_jat, gwcr2_jat, qcr0_jat, qcr2_jat
+    real(8):: gwcr0, gwcr2, qcr0, qcr2, gwr0, gwr2, qr0, qr2
+    real(8):: gg1, gg2, gg3, hh1, hh2, hh3, ss1, ss2, ss3, tt1, tt2, tt3
+    real(8):: dx, dy, dz, r, pi
+    character(2):: bt_t
+    real(8), allocatable:: amat_t(:,:)
+    real(8), allocatable:: refvec(:,:)
+    real(8), allocatable:: dvec(:,:)
+    pi=4.d0*atan(1.d0)
+    allocate(amat_t(self%bf%nbf+1,self%bf%nbf+1))
     one=1.d0
-    a=amat
-    call DGETRF(self%bf%nbf+1,self%bf%nbf+1,a,self%bf%nbf+1,ann_arr%ipiv,info)
+    amat_t=amat
+    call DGETRF(self%bf%nbf+1,self%bf%nbf+1,amat_t,self%bf%nbf+1,ann_arr%ipiv,info)
     if(info/=0) then
         write(*,'(a19,i8)') 'ERROR: DGETRF info=',info
         stop
     endif
+    !call MPI_BARRIER(parini%mpi_env%mpi_comm,ierr)
+    !stop 'KKKKKKKKKKKKKKKKKKKKKKKKKK'
+    allocate(refvec(3,atoms%nat),source=0.d0)
+    !call get_ref_vector(parini,atoms,ann_arr,refvec)
+    allocate(dvec(3,atoms%nat))
     do ibf=1,self%bf%nbf
-        call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
-        call cal_rho_pot_integral_local(self%bf%re(1,ibf),poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
-            poisson%rho,poisson%pot_ion,tt)
         iat=self%bf%imap(ibf)
-        ann_arr%qq(ibf)=-ann_arr%chi_o(ibf)-(atoms%zat(iat)+self%bf%qcore(iat))*self%bf%hardness(ibf)-tt
+        if(trim(self%bf%bt(ibf))=='px') dvec(1,iat)=ann_arr%chi_o(ibf)
+        if(trim(self%bf%bt(ibf))=='py') dvec(2,iat)=ann_arr%chi_o(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') dvec(3,iat)=ann_arr%chi_o(ibf)
+    enddo
+    if(parini%mpi_env%iproc==0) then
+    do iat=1,atoms%nat
+        write(66,'(i5,2x,a2,2x,6es14.5)') iat,trim(atoms%sat(iat)), &
+            refvec(1,iat),refvec(2,iat),refvec(3,iat),dvec(1,iat),dvec(2,iat),dvec(3,iat)
+    enddo
+    endif
+!HERE
+    do ibf=1,self%bf%nbf
+        if(parini%mpi_env%iproc==0) then
+        write(*,*) 'RRRRRRRRRRRRRRRRRR ',ann_arr%chi_o(ibf),self%cep_rhs(ibf)
+        endif
+        iat=self%bf%imap(ibf)
+        !write(*,'(2i5,2x,a2)') ibf,iat,trim(self%bf%bt(ibf))
+        !if(.not. trim(self%bf%bt(ibf))=='s') then
+        !    if(trim(atoms%sat(iat))=='Li') then
+        !        ann_arr%chi_o(ibf)=0.d0
+        !    else
+        !        ann_arr%chi_o(ibf)=0.d0
+        !    endif
+        !endif
+    enddo
+    do ibf=1,self%bf%nbf
+!HERE
+!        if(parini%mpi_env%iproc==0) then
+!        write(*,*) 'rrrrrrrrrrrrrrrrrr ',ann_arr%chi_o(ibf),self%cep_rhs(ibf)
+!        endif
+        ann_arr%qq(ibf)=self%cep_rhs(ibf)-ann_arr%chi_o(ibf)
     enddo
     ann_arr%qq(self%bf%nbf+1)=atoms%qtot-sum(atoms%zat)-sum(self%bf%qcore)
-    call DGETRS('N',self%bf%nbf+1,1,a,self%bf%nbf+1,ann_arr%ipiv,ann_arr%qq,self%bf%nbf+1,info)
+    call DGETRS('N',self%bf%nbf+1,1,amat_t,self%bf%nbf+1,ann_arr%ipiv,ann_arr%qq,self%bf%nbf+1,info)
+    if(parini%mpi_env%iproc==0) then
+!HERE
+!    do ibf=1,self%bf%nbf
+!        write(78,'(i6,f20.10)') ibf,ann_arr%qq(ibf)
+!    enddo
+    !do ibf=1,self%bf%nbf
+    !    write(*,'(a,i6,f20.10)') 'CEPSOLUTION= ',ibf,ann_arr%qq(ibf)
+    !enddo
+    endif
+    !stop 'YYYYYYYYYYYYYYY'
     if(info/=0) then
         write(*,'(a19,i8)') 'ERROR: DGETRS info=',info
         stop
@@ -753,7 +923,7 @@ subroutine get_qat_from_chi_dir_cent2(self,parini,ann_arr,atoms,poisson,amat)
     if(parini%iverbose>1) then
         call yaml_map('Lagrange',ann_arr%qq(self%bf%nbf+1))
     endif
-    deallocate(a)
+    deallocate(amat_t)
 end subroutine get_qat_from_chi_dir_cent2
 !*****************************************************************************************
 subroutine cal_cent2_energy(self,parini,atoms,ann_arr,epot_c,poisson)
@@ -810,75 +980,9 @@ subroutine cal_electrostatic_ann_cent2(self,parini,atoms,ann_arr,poisson)
     real(8):: tt, alpha, beta, ggw, ggw_t
     real(8),allocatable::fat_t(:,:)
     real(8), allocatable:: gausswidth(:)
-    allocate(gausswidth(atoms%nat))
-    do iat=1,atoms%nat
-        gausswidth(iat)=ann_arr%ann(atoms%itypat(iat))%gausswidth_ion
-    enddo
-    if(trim(ann_arr%event)=='potential') then
-        poisson%rho(1:poisson%ngpx,1:poisson%ngpy,1:poisson%ngpz)=0.d0
-        do ibf=1,self%bf%nbf
-            call self%grid_segment2entire(.false.,ibf,self%bf%re(1,ibf),ann_arr%qq(ibf),poisson)
-        enddo
-        self%rho_e=poisson%rho
-        poisson%rho=poisson%rho+self%rho_n
-        poisson%pot=0.d0
-        call get_hartree(parini,poisson,atoms,gausswidth,tt)
-        !write(*,'(a,i3,f20.8)') 'EEE-A ',parini%mpi_env%iproc,tt
-    endif
-    tt=0.d0
-    do iz=1,poisson%ngpz
-    do iy=1,poisson%ngpy
-    do ix=1,poisson%ngpx
-        tt=tt+(self%rho_n(ix,iy,iz)+self%rho_e(ix,iy,iz))*poisson%pot(ix,iy,iz)
-    enddo
-    enddo
-    enddo
-    ann_arr%epot_es=0.5d0*tt*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-        !write(*,'(a,i3,f20.8)') 'EEE-B ',parini%mpi_env%iproc,ann_arr%epot_es
-    deallocate(gausswidth)
+    call self%cent2_ehartree_analytic(parini,ann_arr,atoms,ann_arr%epot_es)
     if(trim(ann_arr%event)=='potential') then
         !Force
-        poisson%rcart=atoms%ratp
-        poisson_force=poisson
-        poisson_force%q(:)=atoms%qat(:)
-        poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-        poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth
-        allocate(fat_t(1:3,atoms%nat))
-        fat_t(1:3,1:atoms%nat)=0.d0
-        call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-            poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
-            poisson_force%lda,poisson_force%ngpx, &
-            poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
-        do iat=1,atoms%nat
-            ggw=ann_arr%ann(atoms%itypat(iat))%gausswidth
-            ggw_t=0.95d0*ggw
-            alpha=ggw**3/(ggw**3-ggw_t**3)
-            atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+alpha*fat_t(1:3,iat)
-        enddo
-        poisson%rcart=atoms%ratp
-        poisson_force=poisson
-        poisson_force%q(:)=atoms%qat(:)
-        poisson_force%gw(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
-        poisson_force%gw_ewald(:)=0.95d0*ann_arr%ann(atoms%itypat(:))%gausswidth
-        fat_t(1:3,1:atoms%nat)=0.d0
-        call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-            poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
-            poisson_force%lda,poisson_force%ngpx, &
-            poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,fat_t)
-        do iat=1,atoms%nat
-            ggw=ann_arr%ann(atoms%itypat(iat))%gausswidth
-            ggw_t=0.95d0*ggw
-            beta=-ggw_t**3/(ggw**3-ggw_t**3)
-            atoms%fat(1:3,iat)=atoms%fat(1:3,iat)+beta*fat_t(1:3,iat)
-        enddo
-        deallocate(fat_t)
-        poisson_force%q(:)=atoms%zat(:)
-        poisson_force%gw(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
-        poisson_force%gw_ewald(:)=ann_arr%ann(atoms%itypat(:))%gausswidth_ion
-        call force_gto_sym_ortho(parini,poisson_force%bc,poisson_force%nat,poisson_force%rcart, &
-            poisson_force%q,poisson_force%gw_ewald,poisson_force%rgcut,poisson_force%xyz111, &
-            poisson_force%lda,poisson_force%ngpx, &
-            poisson_force%ngpy,poisson_force%ngpz,poisson_force%hgrid,poisson_force%pot,atoms%fat)
     endif
 end subroutine cal_electrostatic_ann_cent2
 !*****************************************************************************************
@@ -896,8 +1000,6 @@ subroutine fini_electrostatic_cent2(self,parini,ann_arr,atoms,poisson)
     type(typ_poisson), intent(inout):: poisson
     call fini_hartree(parini,atoms,poisson)
     call self%bf%fini_bf()
-    deallocate(self%rho_tmp)
-    deallocate(self%rho_e)
     deallocate(self%rho_n)
     deallocate(self%gausswidth_tmp)
 end subroutine fini_electrostatic_cent2
@@ -983,7 +1085,7 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     real(8):: p(3), ttp1, ttp2, a1, a2, b1, b2
     real(8):: qavg(10), qvar(10)
     real(8):: cavg(10), cvar(10)
-    real(8):: one, dpm(3)
+    real(8):: one, dpm(3), ehartree_analytic
     type(typ_trial_energy):: trial_energy
     real(8):: time1, time2
     real(8), allocatable:: amat(:,:)
@@ -1012,18 +1114,17 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     endif
     !-----------------------------------------------------------------
     call cpu_time(time1)
-    allocate(amat(self%bf%nbf+1,self%bf%nbf+1),source=0.d0)
-    if(parini%mpi_env%nproc>1) then
-    call fmpi_allreduce(amat(1,1),(self%bf%nbf+1)**2,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
-    endif
-    amat(self%bf%nbf+1,self%bf%nbf+1)=0.d0
-    do jbf=1,(self%bf%nbf+1)
-    do ibf=1,(self%bf%nbf+1)
-        self%amat(ibf,jbf)=amat(ibf,jbf)
-        !write(92,'(i5,f15.7)') (jat-1)*(atoms%nat+1)+iat,amat(iat,jat)
-    enddo
-    enddo
-    !self%amat_is_calculated=.true.
+    !allocate(amat(self%bf%nbf+1,self%bf%nbf+1),source=0.d0)
+    !if(parini%mpi_env%nproc>1) then
+    !call fmpi_allreduce(amat(1,1),(self%bf%nbf+1)**2,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    !endif
+    !amat(self%bf%nbf+1,self%bf%nbf+1)=0.d0
+    !do jbf=1,(self%bf%nbf+1)
+    !do ibf=1,(self%bf%nbf+1)
+    !    self%amat(ibf,jbf)=amat(ibf,jbf)
+    !    !write(92,'(i5,f15.7)') (jat-1)*(atoms%nat+1)+iat,amat(iat,jat)
+    !enddo
+    !enddo
     allocate(squarefit_raw(self%bf%nbf,self%bf%nbf),rhs_raw(self%bf%nbf))
     call get_cost_secder(parini,trial_energy,poisson,atoms,self%bf%nbf,self%bf%imap,self%bf%bt, &
     self%bf%be_s,self%bf%gwe_s,self%bf%gwe_p,self%bf%qcore,self%bf%bc,self%bf%gwc,squarefit_raw,rhs_raw)
@@ -1033,6 +1134,12 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     !endif
     !-----------------------------------------------------------------
     call self%get_expansion_coeff(parini,ann_arr,atoms,squarefit_raw,rhs_raw)
+!HERE
+!    if(parini%mpi_env%iproc==0) then
+!    do ibf=1,self%bf%nbf
+!        write(77,'(i6,f20.10)') ibf,ann_arr%qq(ibf)
+!    enddo
+!    endif
     !-----------------------------------------------------------------
     atoms%qat(1:atoms%nat)=self%bf%qcore(1:atoms%nat)
     do ibf=1,self%bf%nbf
@@ -1075,7 +1182,14 @@ subroutine prefit_cent2(self,parini,ann_arr,atoms,poisson)
     call self%reverseCEP(parini,ann_arr,atoms,poisson,self%amat)
     call get_rmse(trial_energy,self%bf%nbf,ann_arr%qq,rmse)
     rmse=1.d3*rmse !convert to mHa
-    call self%cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
+    !call self%cal_etrial_cent2(parini,ann_arr,atoms,poisson,U_SRS)
+    !call self%cent2_ehartree_analytic_test(parini,ann_arr,atoms,poisson,U_SRS)
+    !call self%cent2_ehartree_analytic_monopole(parini,ann_arr,atoms,ehartree_analytic)
+    call self%cent2_ehartree_analytic(parini,ann_arr,atoms,U_SRS)
+    !if(parini%mpi_env%iproc==0) then
+    !write(*,'(a,2es24.15,es14.5)') 'EH compare: ',U_SRS,ehartree_analytic,U_SRS-ehartree_analytic
+    !endif
+    !stop
     call prefit_cent2_output(parini,ann_arr,atoms,qavg,qvar,cavg,cvar)
     err_U_SRS=1.d3*(U_SRS-trial_energy%ehartree_scn_excl)/atoms%nat
     if(parini%mpi_env%iproc==0) then
@@ -1291,7 +1405,7 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
         write(*,*) 'nat_type= ',nat_type
     endif
     frac=0.d0
-    do iter=0,100
+    do iter=0,0
     do itypat=1,parini%ntypat
         ann_arr%ann(itypat)%qtarget=0.d0
     enddo
@@ -1322,7 +1436,11 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
     !hh=frac*real_eigenval(self%bf%nbf-atoms%nat+1)
     do ibf=1,self%bf%nbf
         !squarefit(ibf,ibf)=squarefit(ibf,ibf)+hh
-        squarefit_t(ibf,ibf)=squarefit_t(ibf,ibf)+hh
+        if(trim(self%bf%bt(ibf))=='s') then
+            iat=self%bf%imap(ibf)
+            itypat=atoms%itypat(iat)
+            squarefit_t(ibf,ibf)=squarefit_t(ibf,ibf)+hh
+        endif
     enddo
     !call DSYEV('N','U',self%bf%nbf,squarefit,self%bf%nbf,real_eigenval,work,lwork,info)
     !if(parini%mpi_env%iproc==0) then
@@ -1371,7 +1489,7 @@ subroutine get_expansion_coeff(self,parini,ann_arr,atoms,squarefit_raw,rhs_raw)
     deallocate(real_eigenval,work)
 end subroutine get_expansion_coeff
 !*****************************************************************************************
-subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
+subroutine cent2_ehartree_analytic_test(self,parini,ann_arr,atoms,poisson,U_SRS)
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
     use mod_atoms, only: typ_atoms
@@ -1384,37 +1502,471 @@ subroutine cal_etrial_cent2(self,parini,ann_arr,atoms,poisson,U_SRS)
     type(typ_poisson), intent(inout):: poisson
     real(8), intent(out):: U_SRS
     !local variables
-    integer:: iat, ix, iy, iz
-    real(8):: tt
+    integer:: iat, ix, ibf
+    real(8):: tt, a1, q_tmp(1)
     real(8), allocatable:: gausswidth(:)
-    allocate(gausswidth(atoms%nat))
-    poisson%rho=self%rho_e
-    poisson%pot=0.d0
-    call get_hartree(parini,poisson,atoms,gausswidth,tt)
-    poisson%pot=poisson%pot+poisson%pot_ion
-    gausswidth=0.5d0 !TO_BE_CORRECTED
-    atoms%fat=0.d0
-    call force_gto_sym_ortho(parini,atoms%boundcond,atoms%nat,atoms%ratp, &
-        atoms%zat,gausswidth,6.d0,poisson%xyz111, &
-        poisson%ngpx,poisson%ngpx,poisson%ngpy,poisson%ngpz, &
-        poisson%hgrid,poisson%pot,atoms%fat)
-    if(parini%mpi_env%iproc==0) then
+    real(8), allocatable:: pat(:,:)
+    allocate(pat(3,atoms%nat),source=0.d0)
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        if(trim(self%bf%bt(ibf))=='px') pat(1,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='py') pat(2,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') pat(3,iat)=ann_arr%qq(ibf)
+    enddo
+    poisson%rho=0.d0
     do iat=1,atoms%nat
-        write(61,'(a,i3,3(a2,es24.15),a)') '  - [',iat,', ',atoms%fat(1,iat),', ',atoms%fat(2,iat),', ',atoms%fat(3,iat),']'
+        ibf=self%bf%ibf_list_s(iat)
+        q_tmp(1)=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwe_s(iat), &
+            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+
+        q_tmp(1)=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwe_s(iat), &
+            5.d0*self%bf%gwe_s(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+
+        a1=self%bf%gwe_p(1,iat)
+        call put_gto_p_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),pat(1,iat),a1, &
+            6.d0*a1,poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+
+        q_tmp(1)=self%bf%qcore(iat)*self%bf%bc(iat)
+        call put_gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwc(iat), &
+            6.d0*self%bf%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
+        q_tmp(1)=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        call put_r2gto_sym_ortho(parini,poisson%bc,.false.,1,atoms%ratp(1,iat),q_tmp,self%bf%gwc(iat), &
+            6.d0*self%bf%gwc(iat),poisson%xyz111,poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rho)
     enddo
-    endif
-    poisson%rho=poisson%rho+self%rho_n
-    tt=0.d0
-    do iz=1,poisson%ngpz
-    do iy=1,poisson%ngpy
-    do ix=1,poisson%ngpx
-        tt=tt+poisson%rho(ix,iy,iz)*poisson%pot(ix,iy,iz)
+    allocate(gausswidth(atoms%nat),source=1.d0)
+    call get_hartree(parini,poisson,atoms,gausswidth,U_SRS)
+end subroutine cent2_ehartree_analytic_test
+!*****************************************************************************************
+subroutine cent2_ehartree_analytic_monopole(self,parini,ann_arr,atoms,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    class(typ_cent2), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(out):: ehartree
+    !local variables
+    integer:: iat, jat, ibf, jbf
+    real(8):: epot, pi, dx, dy, dz, r, tt1, tt2, tt3
+    real(8):: ss1, ss2, ss3
+    real(8):: gg1, gg2, gg3, hh1, hh2, hh3
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    real(8):: e_qr0_qr0, e_pr1_pr1, e_qr0_j_pr1_i, e_qr0_i_pr1_j, e_qr2_qr2
+    real(8):: e_qr0_i_qr2_j, e_qr0_j_qr2_i, e_qr2_j_pr1_i, e_qr2_i_pr1_j, e_qcr0_qcr0
+    real(8):: e_qcr2_qcr2, e_qcr0_i_qcr2_j, e_qcr0_j_qcr2_i, e_qcr0_qr0, e_qr0_qcr0
+    real(8):: e_qcr0_j_pr1_i, e_qcr0_i_pr1_j, e_qcr2_qr2, e_qr2_qcr2, e_qcr0_i_qr2_j
+    real(8):: e_qr0_j_qcr2_i, e_qcr2_j_pr1_i, e_qcr2_i_pr1_j
+    real(8):: e_qr0_i_qcr2_j, e_qcr0_j_qr2_i
+    real(8):: gwcr0_iat, gwcr2_iat, qcr0_iat, qcr2_iat, gwcr0_jat, gwcr2_jat, qcr0_jat
+    real(8):: qcr2_jat, gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwr0_jat
+    real(8):: gwr2_jat, gwp1_jat, qr0_jat, qr2_jat
+    real(8):: pi_dot_pi
+    real(8):: gwr0, gwr2, gwp1, qr0, qr2, gwcr0, gwcr2, qcr0, qcr2
+    real(8), allocatable:: pat(:,:)
+    pi=4.d0*atan(1.d0)
+    allocate(pat(3,atoms%nat),source=0.d0)
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        if(trim(self%bf%bt(ibf))=='px') pat(1,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='py') pat(2,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') pat(3,iat)=ann_arr%qq(ibf)
+    enddo
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+    ehartree=0.d0
+    do iat=1,atoms%nat
+        gwcr0=self%bf%gwc(iat)
+        gwcr2=self%bf%gwc(iat)
+        qcr0=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        !self-interaction of qcr0-qcr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwcr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwcr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwcr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qcr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qcr2 interaction
+        hh1=gwcr2*sf_1
+        hh2=gwcr2*sf_2
+        hh3=gwcr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*hh1**2+9.d0*hh1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*hh2**2+9.d0*hh2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*hh3**2+9.d0*hh3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qcr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qcr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0=self%bf%gwe_s(iat)
+        gwr2=gwr0
+        gwp1=self%bf%gwe_p(1,iat)
+        qr0=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        !self-interaction of qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qr2-qr2 interaction
+        gg1=gwr2*sf_1
+        gg2=gwr2*sf_2
+        gg3=gwr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*gg1**2+9.d0*gg1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*gg2**2+9.d0*gg2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*gg3**2+9.d0*gg3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !self-interaction of qcr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_3**2)
+        ehartree=ehartree+1.0d0*2.d0*qcr0*qr0*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qr2 interaction
+        ss1=(2.d0*sf_1*(3.d0+5.d0*(hh1**2+gg1**2)+2.0d0*(hh1**4+gg1**4)+5.d0*hh1**2*gg1**2))/(3.d0*sqrt(pi)*(1.d0+hh1**2+gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+5.d0*(hh2**2+gg2**2)+2.0d0*(hh2**4+gg2**4)+5.d0*hh2**2*gg2**2))/(3.d0*sqrt(pi)*(1.d0+hh2**2+gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+5.d0*(hh3**2+gg3**2)+2.0d0*(hh3**4+gg3**4)+5.d0*hh3**2*gg3**2))/(3.d0*sqrt(pi)*(1.d0+hh3**2+gg3**2)**2.5d0)
+        ehartree=ehartree+1.0d0*qcr2*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qcr2*(a*ss1+b*ss2+c*ss3)
+    enddo
+    do iat=1,atoms%nat
+    do jat=iat+1,atoms%nat
+        gwcr0_iat=self%bf%gwc(iat)
+        gwcr2_iat=self%bf%gwc(iat)
+        qcr0_iat=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2_iat=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        gwcr0_jat=self%bf%gwc(jat)
+        gwcr2_jat=self%bf%gwc(jat)
+        qcr0_jat=self%bf%qcore(jat)*self%bf%bc(jat)
+        qcr2_jat=self%bf%qcore(jat)*(1.d0-self%bf%bc(jat))
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0_iat=self%bf%gwe_s(iat)
+        gwr2_iat=gwr0_iat
+        gwp1_iat=self%bf%gwe_p(1,iat)
+        qr0_iat=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2_iat=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        jbf=self%bf%ibf_list_s(jat)
+        gwr0_jat=self%bf%gwe_s(jat)
+        gwr2_jat=gwr0_jat
+        gwp1_jat=self%bf%gwe_p(1,jat)
+        qr0_jat=ann_arr%qq(jbf)*self%bf%be_s(jat)
+        qr2_jat=ann_arr%qq(jbf)*(1.d0-self%bf%be_s(jat))
+        !-----------------------------------------------------------------------
+        dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+        dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+        dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+        r=sqrt(dx**2+dy**2+dz**2)
+        !-----------------------------------------------------------------------
+        !qr0-qr0 interaction
+        e_qr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwr0_jat,qr0_iat,qr0_jat)
+        !-----------------------------------------------------------------------
+        !qr2-qr2 interaction
+        e_qr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwr2_jat,qr2_iat,qr2_jat)
+        !-----------------------------------------------------------------------
+        !qr0-qr2 interaction
+        e_qr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwr2_jat,qr0_iat,qr2_jat)
+        e_qr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwr2_iat,qr0_jat,qr2_iat)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qcr0 interaction
+        e_qcr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwcr0_jat,qcr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr2-qcr2 interaction
+        e_qcr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwcr2_jat,qcr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qcr2 interaction
+        e_qcr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwcr2_jat,qcr0_iat,qcr2_jat)
+        e_qcr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwcr2_iat,qcr0_jat,qcr2_iat)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qr0 interaction
+        e_qcr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwr0_jat,qcr0_iat,qr0_jat)
+        e_qr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwcr0_jat,qr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr2-qr2 interaction
+        e_qcr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwr2_jat,qcr2_iat,qr2_jat)
+        e_qr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwcr2_jat,qr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qr2 interaction
+        e_qcr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwr2_jat,qcr0_iat,qr2_jat)
+        e_qcr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwr2_iat,qcr0_jat,qr2_iat)
+        !-----------------------------------------------------------------------
+        !qr0-qcr2 interaction
+        e_qr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwcr2_iat,qr0_jat,qcr2_iat)
+        e_qr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwcr2_jat,qr0_iat,qcr2_jat)
+        ehartree=ehartree+e_qr0_qr0+e_qr2_qr2+ &
+            e_qr0_i_qr2_j+e_qr0_j_qr2_i+e_qcr0_qcr0+ &
+            e_qcr2_qcr2+e_qcr0_i_qcr2_j+e_qcr0_j_qcr2_i+e_qcr0_qr0+e_qr0_qcr0+ &
+            e_qcr2_qr2+e_qr2_qcr2+e_qcr0_i_qr2_j+ &
+            e_qr0_i_qcr2_j+e_qcr0_j_qr2_i+ &
+            e_qr0_j_qcr2_i
     enddo
     enddo
+    deallocate(pat)
+end subroutine cent2_ehartree_analytic_monopole
+!*****************************************************************************************
+subroutine cent2_ehartree_analytic(self,parini,ann_arr,atoms,ehartree)
+    use mod_parini, only: typ_parini
+    use mod_ann, only: typ_ann_arr
+    use mod_atoms, only: typ_atoms
+    implicit none
+    class(typ_cent2), intent(inout):: self
+    type(typ_parini), intent(in):: parini
+    type(typ_ann_arr), intent(in):: ann_arr
+    type(typ_atoms), intent(inout):: atoms
+    real(8), intent(out):: ehartree
+    !local variables
+    integer:: iat, jat, ibf, jbf
+    real(8):: epot, pi, dx, dy, dz, r, tt1, tt2, tt3
+    real(8):: ss1, ss2, ss3
+    real(8):: gg1, gg2, gg3, hh1, hh2, hh3
+    real(8):: a, b, c, sf_1, sf_2, sf_3, sfs(3)
+    real(8):: e_qr0_qr0, e_pr1_pr1, e_qr0_j_pr1_i, e_qr0_i_pr1_j, e_qr2_qr2
+    real(8):: e_qr0_i_qr2_j, e_qr0_j_qr2_i, e_qr2_j_pr1_i, e_qr2_i_pr1_j, e_qcr0_qcr0
+    real(8):: e_qcr2_qcr2, e_qcr0_i_qcr2_j, e_qcr0_j_qcr2_i, e_qcr0_qr0, e_qr0_qcr0
+    real(8):: e_qcr0_j_pr1_i, e_qcr0_i_pr1_j, e_qcr2_qr2, e_qr2_qcr2, e_qcr0_i_qr2_j
+    real(8):: e_qr0_j_qcr2_i, e_qcr2_j_pr1_i, e_qcr2_i_pr1_j
+    real(8):: e_qr0_i_qcr2_j, e_qcr0_j_qr2_i
+    real(8):: gwcr0_iat, gwcr2_iat, qcr0_iat, qcr2_iat, gwcr0_jat, gwcr2_jat, qcr0_jat
+    real(8):: qcr2_jat, gwr0_iat, gwr2_iat, gwp1_iat, qr0_iat, qr2_iat, gwr0_jat
+    real(8):: gwr2_jat, gwp1_jat, qr0_jat, qr2_jat
+    real(8):: pi_dot_pi
+    real(8):: gwr0, gwr2, gwp1, qr0, qr2, gwcr0, gwcr2, qcr0, qcr2
+    real(8), allocatable:: pat(:,:)
+    pi=4.d0*atan(1.d0)
+    allocate(pat(3,atoms%nat),source=0.d0)
+    do ibf=1,self%bf%nbf
+        iat=self%bf%imap(ibf)
+        if(trim(self%bf%bt(ibf))=='px') pat(1,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='py') pat(2,iat)=ann_arr%qq(ibf)
+        if(trim(self%bf%bt(ibf))=='pz') pat(3,iat)=ann_arr%qq(ibf)
     enddo
-    U_SRS=0.5d0*tt*(poisson%hgrid(1,1)*poisson%hgrid(2,2)*poisson%hgrid(3,3))
-    deallocate(gausswidth)
-end subroutine cal_etrial_cent2
+    sfs(1)=parini%screening_factor
+    sfs(2)=parini%screening_factor*1.1d0
+    sfs(3)=parini%screening_factor*1.2d0
+    sf_1=parini%screening_factor
+    sf_2=parini%screening_factor*1.1d0
+    sf_3=parini%screening_factor*1.2d0
+    a=sf_2*sf_3*(sf_2+sf_3)/((sf_2-sf_1)*(sf_3-sf_1)*(sf_1+sf_2+sf_3))
+    b=sf_1*sf_3*(sf_1+sf_3)/((sf_3-sf_2)*(sf_1-sf_2)*(sf_1+sf_2+sf_3))
+    c=sf_2*sf_1*(sf_2+sf_1)/((sf_1-sf_3)*(sf_2-sf_3)*(sf_1+sf_2+sf_3))
+    ehartree=0.d0
+    do iat=1,atoms%nat
+        gwcr0=self%bf%gwc(iat)
+        gwcr2=self%bf%gwc(iat)
+        qcr0=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        !self-interaction of qcr0-qcr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwcr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwcr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwcr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qcr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qcr2 interaction
+        hh1=gwcr2*sf_1
+        hh2=gwcr2*sf_2
+        hh3=gwcr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*hh1**2+9.d0*hh1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*hh2**2+9.d0*hh2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*hh3**2+9.d0*hh3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*hh3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qcr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qcr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0=self%bf%gwe_s(iat)
+        gwr2=gwr0
+        gwp1=self%bf%gwe_p(1,iat)
+        qr0=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        !self-interaction of qr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwr0**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwr0**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwr0**2*sf_3**2)
+        ehartree=ehartree+0.5d0*2.d0*qr0**2*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of pr1-pr1 interaction
+        tt1=sf_1/sqrt(1.d0+2.d0*gwp1**2*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+2.d0*gwp1**2*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+2.d0*gwp1**2*sf_3**2)
+        pi_dot_pi=pat(1,iat)**2+pat(2,iat)**2+pat(3,iat)**2
+        ehartree=ehartree+0.5d0*4.d0*pi_dot_pi*(a*tt1**3+b*tt2**3+c*tt3**3)/(3.d0*sqrt(pi))
+        !self-interaction of qr2-qr2 interaction
+        gg1=gwr2*sf_1
+        gg2=gwr2*sf_2
+        gg3=gwr2*sf_3
+        ss1=(2.d0*sf_1*(3.d0+10.d0*gg1**2+9.d0*gg1**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+10.d0*gg2**2+9.d0*gg2**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+10.d0*gg3**2+9.d0*gg3**4))/(3.d0*sqrt(pi)*(1.d0+2.d0*gg3**2)**2.5d0)
+        ehartree=ehartree+0.5d0*qr2**2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !self-interaction of qcr0-qr0 interaction
+        tt1=sf_1/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_1**2)
+        tt2=sf_2/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_2**2)
+        tt3=sf_3/sqrt(1.d0+(gwcr0**2+gwr0**2)*sf_3**2)
+        ehartree=ehartree+1.0d0*2.d0*qcr0*qr0*(a*tt1+b*tt2+c*tt3)/sqrt(pi)
+        !self-interaction of qcr2-qr2 interaction
+        ss1=(2.d0*sf_1*(3.d0+5.d0*(hh1**2+gg1**2)+2.0d0*(hh1**4+gg1**4)+5.d0*hh1**2*gg1**2))/(3.d0*sqrt(pi)*(1.d0+hh1**2+gg1**2)**2.5d0)
+        ss2=(2.d0*sf_2*(3.d0+5.d0*(hh2**2+gg2**2)+2.0d0*(hh2**4+gg2**4)+5.d0*hh2**2*gg2**2))/(3.d0*sqrt(pi)*(1.d0+hh2**2+gg2**2)**2.5d0)
+        ss3=(2.d0*sf_3*(3.d0+5.d0*(hh3**2+gg3**2)+2.0d0*(hh3**4+gg3**4)+5.d0*hh3**2*gg3**2))/(3.d0*sqrt(pi)*(1.d0+hh3**2+gg3**2)**2.5d0)
+        ehartree=ehartree+1.0d0*qcr2*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qcr0-qr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwcr0**2+2.d0*gwr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwcr0**2+gwr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qcr0*qr2*(a*ss1+b*ss2+c*ss3)
+        !self-interaction of qr0-qcr2 interaction
+        tt1=2.d0*sf_1*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_1**2)
+        tt2=2.d0*sf_2*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_2**2)
+        tt3=2.d0*sf_3*(3.d0+(3.d0*gwr0**2+2.d0*gwcr2**2)*sf_3**2)
+        ss1=tt1/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_1**2)**1.5d0)
+        ss2=tt2/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_2**2)**1.5d0)
+        ss3=tt3/(3.d0*sqrt(pi)*(1.d0+(gwr0**2+gwcr2**2)*sf_3**2)**1.5d0)
+        ehartree=ehartree+1.d0*qr0*qcr2*(a*ss1+b*ss2+c*ss3)
+    enddo
+    do iat=1,atoms%nat
+    do jat=iat+1,atoms%nat
+        gwcr0_iat=self%bf%gwc(iat)
+        gwcr2_iat=self%bf%gwc(iat)
+        qcr0_iat=self%bf%qcore(iat)*self%bf%bc(iat)
+        qcr2_iat=self%bf%qcore(iat)*(1.d0-self%bf%bc(iat))
+        gwcr0_jat=self%bf%gwc(jat)
+        gwcr2_jat=self%bf%gwc(jat)
+        qcr0_jat=self%bf%qcore(jat)*self%bf%bc(jat)
+        qcr2_jat=self%bf%qcore(jat)*(1.d0-self%bf%bc(jat))
+        ibf=self%bf%ibf_list_s(iat)
+        gwr0_iat=self%bf%gwe_s(iat)
+        gwr2_iat=gwr0_iat
+        gwp1_iat=self%bf%gwe_p(1,iat)
+        qr0_iat=ann_arr%qq(ibf)*self%bf%be_s(iat)
+        qr2_iat=ann_arr%qq(ibf)*(1.d0-self%bf%be_s(iat))
+        jbf=self%bf%ibf_list_s(jat)
+        gwr0_jat=self%bf%gwe_s(jat)
+        gwr2_jat=gwr0_jat
+        gwp1_jat=self%bf%gwe_p(1,jat)
+        qr0_jat=ann_arr%qq(jbf)*self%bf%be_s(jat)
+        qr2_jat=ann_arr%qq(jbf)*(1.d0-self%bf%be_s(jat))
+        !-----------------------------------------------------------------------
+        dx=atoms%ratp(1,iat)-atoms%ratp(1,jat)
+        dy=atoms%ratp(2,iat)-atoms%ratp(2,jat)
+        dz=atoms%ratp(3,iat)-atoms%ratp(3,jat)
+        r=sqrt(dx**2+dy**2+dz**2)
+        !-----------------------------------------------------------------------
+        !qr0-qr0 interaction
+        e_qr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwr0_jat,qr0_iat,qr0_jat)
+        !-----------------------------------------------------------------------
+        !pr1-pr1 interaction
+        e_pr1_pr1=get_ener_pr1_pr1(a,b,c,dx,dy,dz,r,sfs,gwp1_iat,gwp1_jat,pat(1,iat),pat(1,jat))
+        !-----------------------------------------------------------------------
+        !qr0-pr1 interaction
+        e_qr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwr0_jat,gwp1_iat,qr0_jat,pat(1,iat))
+        e_qr0_i_pr1_j=get_ener_qr0_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr0_iat,gwp1_jat,qr0_iat,pat(1,jat))
+        !-----------------------------------------------------------------------
+        !qr2-qr2 interaction
+        e_qr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwr2_jat,qr2_iat,qr2_jat)
+        !-----------------------------------------------------------------------
+        !qr0-qr2 interaction
+        e_qr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwr2_jat,qr0_iat,qr2_jat)
+        e_qr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwr2_iat,qr0_jat,qr2_iat)
+        !-----------------------------------------------------------------------
+        !pr1-qr2 interaction
+        e_qr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwr2_jat,gwp1_iat,qr2_jat,pat(1,iat))
+        e_qr2_i_pr1_j=get_ener_qr2_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwr2_iat,gwp1_jat,qr2_iat,pat(1,jat))
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qcr0 interaction
+        e_qcr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwcr0_jat,qcr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr2-qcr2 interaction
+        e_qcr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwcr2_jat,qcr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qcr2 interaction
+        e_qcr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwcr2_jat,qcr0_iat,qcr2_jat)
+        e_qcr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwcr2_iat,qcr0_jat,qcr2_iat)
+        !+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        !qcr0-qr0 interaction
+        e_qcr0_qr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwcr0_iat,gwr0_jat,qcr0_iat,qr0_jat)
+        e_qr0_qcr0=get_ener_qr0_qr0(a,b,c,r,sfs,gwr0_iat,gwcr0_jat,qr0_iat,qcr0_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-pr1 interaction
+        e_qcr0_j_pr1_i=get_ener_qr0_pr1(a,b,c, dx, dy, dz,r,sfs,gwcr0_jat,gwp1_iat,qcr0_jat,pat(1,iat))
+        e_qcr0_i_pr1_j=get_ener_qr0_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwcr0_iat,gwp1_jat,qcr0_iat,pat(1,jat))
+        !-----------------------------------------------------------------------
+        !qcr2-qr2 interaction
+        e_qcr2_qr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwcr2_iat,gwr2_jat,qcr2_iat,qr2_jat)
+        e_qr2_qcr2=get_ener_qr2_qr2(a,b,c,r,sfs,gwr2_iat,gwcr2_jat,qr2_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !qcr0-qr2 interaction
+        e_qcr0_i_qr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_iat,gwr2_jat,qcr0_iat,qr2_jat)
+        e_qcr0_j_qr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwcr0_jat,gwr2_iat,qcr0_jat,qr2_iat)
+        !-----------------------------------------------------------------------
+        !qr0-qcr2 interaction
+        e_qr0_j_qcr2_i=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_jat,gwcr2_iat,qr0_jat,qcr2_iat)
+        e_qr0_i_qcr2_j=get_ener_qr0_qr2(a,b,c,r,sfs,gwr0_iat,gwcr2_jat,qr0_iat,qcr2_jat)
+        !-----------------------------------------------------------------------
+        !pr1-qcr2 interaction
+        e_qcr2_j_pr1_i=get_ener_qr2_pr1(a,b,c, dx, dy, dz,r,sfs,gwcr2_jat,gwp1_iat,qcr2_jat,pat(1,iat))
+        e_qcr2_i_pr1_j=get_ener_qr2_pr1(a,b,c,-dx,-dy,-dz,r,sfs,gwcr2_iat,gwp1_jat,qcr2_iat,pat(1,jat))
+        ehartree=ehartree+e_qr0_qr0+e_pr1_pr1+e_qr0_j_pr1_i+e_qr0_i_pr1_j+e_qr2_qr2+ &
+            e_qr0_i_qr2_j+e_qr0_j_qr2_i+e_qr2_j_pr1_i+e_qr2_i_pr1_j+e_qcr0_qcr0+ &
+            e_qcr2_qcr2+e_qcr0_i_qcr2_j+e_qcr0_j_qcr2_i+e_qcr0_qr0+e_qr0_qcr0+ &
+            e_qcr0_j_pr1_i+e_qcr0_i_pr1_j+e_qcr2_qr2+e_qr2_qcr2+e_qcr0_i_qr2_j+ &
+            e_qr0_i_qcr2_j+e_qcr0_j_qr2_i+ &
+            e_qr0_j_qcr2_i+e_qcr2_j_pr1_i+e_qcr2_i_pr1_j
+    enddo
+    enddo
+    deallocate(pat)
+end subroutine cent2_ehartree_analytic
 !*****************************************************************************************
 subroutine prefit_cent2_output(parini,ann_arr,atoms,qavg,qvar,cavg,cvar)
     use mod_parini, only: typ_parini
@@ -1479,16 +2031,8 @@ subroutine reverseCEP(self,parini,ann_arr,atoms,poisson,amat)
     type(typ_file_info):: file_info
     real(8), allocatable:: ww(:)
     allocate(ww(self%bf%nbf))
-    self%rho_e=0.d0
     do ibf=1,self%bf%nbf
-        iat=self%bf%imap(ibf)
-        call self%grid_segment2entire(.true.,ibf,self%bf%re(1,ibf),1.d0,poisson)
-        self%rho_e=self%rho_e+ann_arr%qq(ibf)*poisson%rho
-        call cal_rho_pot_integral_local(atoms%ratp(1,iat),poisson%xyz111, &
-            poisson%ngpx,poisson%ngpy,poisson%ngpz,poisson%hgrid,poisson%rgcut, &
-            poisson%rho,poisson%pot_ion,tt)
-        iat=self%bf%imap(ibf)
-        ww(ibf)=-(atoms%zat(iat)+self%bf%qcore(iat))*self%bf%hardness(ibf)-tt
+        ww(ibf)=self%cep_rhs(ibf)
     enddo
     do ibf=1,self%bf%nbf
         tt=0.d0
@@ -1792,6 +2336,40 @@ pure function get_ener_qr2_pr1(a,b,c,dx,dy,dz,r,sfs,gwq,gwp,q,p) result(ener)
     p_dot_rij=dx*p(1)+dy*p(2)+dz*p(3)
     ener=-p_dot_rij*q*(a*ww1+b*ww2+c*ww3)
 end function get_ener_qr2_pr1
+!*****************************************************************************************
+function cutoff_function(r, rc) result(fc)
+    implicit none
+    real(8), intent(in):: r, rc
+    !local variables
+    real(8):: fc, pi
+    if(r<rc) then
+        fc=(1.d0-(r/rc)**2)**3
+    else
+        fc=0.d0
+    endif
+    !pi=4.d0*atan(1.d0)
+    !if(r<rc*.5d0) then
+    !    fc=1.d0
+    !elseif(r<rc) then
+    !    fc=cos((1.d0-((1.d0-((r-rc*0.5d0)/(rc*0.5d0))**2)**3))*pi*0.5d0)
+    !else
+    !    fc=0.d0
+    !endif
+    !Compare it with: PHYSICAL REVIEW B 93, 155203 (2016) -> comparison is done:
+    !the second derivative in the cutoff function in PRB paper does not vanish.
+end function cutoff_function
+!*****************************************************************************************
+function cutoff_function_der(r, rc) result(fcd)
+    implicit none
+    real(8), intent(in):: r, rc
+    !local variables
+    real(8):: fcd, pi
+    if(r<rc) then
+        fcd=-6.d0*(r/rc**2)*(1.d0-(r/rc)**2)**2
+    else
+        fcd=0.d0
+    endif
+end function cutoff_function_der
 !*****************************************************************************************
 end module mod_cent2
 !*****************************************************************************************

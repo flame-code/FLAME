@@ -4,8 +4,8 @@ module interface_lammps
 #if defined(HAVE_LAMMPS)
   use mpi
   use LAMMPS
-  use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int
 #endif
+  use, intrinsic :: ISO_C_binding, only : C_double, C_ptr, C_int
 
   implicit none
   private
@@ -78,6 +78,7 @@ use mod_parini, only: typ_parini
 implicit none
 type(typ_parini), intent(in):: parini
 integer:: iat,nnat
+#if defined(HAVE_LAMMPS)
 write(*,'(a)') " # Initiallizing lammps"
 ! And here's how to to it with a string constant of your choice
    call lammps_open_no_mpi ('lmp -log log.lammps', lmp)
@@ -172,6 +173,9 @@ call lammps_command (lmp, "thermo 0")
 !!call lammps_command (lmp, trim(command_line))
 
 
+#else
+    stop 'ERROR: FLAME is not linked with LAMMPS, this routine should not be called!'
+#endif
 end subroutine
 
 !!!********************************************************************************
@@ -188,6 +192,7 @@ real(8):: tilts(6),tiltsm(6),ftot(3),randmov(3,parini%nat)
 real(8):: latvec(3,3),latvec_ang(3,3),latvec_tilt(3,3),latvec_tilt_inv(3,3),k_latvec(3,3)
 real(8),allocatable:: k_xcart(:,:,:,:,:),k_xred(:,:,:,:,:)
 character(5)::dnat1,dnat2
+#if defined(HAVE_LAMMPS)
 !!call random_number(randmov)
 !!randmov=randmov*0.01d0
 xred=xred0!+randmov
@@ -444,6 +449,9 @@ endif
    energy=compute/Ha_eV/real(nec1*nec2*nec3,8)
   deallocate(k_xcart,k_xred)
 
+#else
+    stop 'ERROR: FLAME is not linked with LAMMPS, this routine should not be called!'
+#endif
 
 end subroutine
 !********************************************************************************

@@ -75,10 +75,26 @@ subroutine cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     !local variables
     real(8):: ttx, tty, ttz, qnet, hinv(3,3), vol
     integer:: ib, i, j, iat, jat
+    integer:: iats, iate, mat, mproc
+    integer, save:: icall=0
+    icall=icall+1
+    if(parini%mpi_env%nproc>1) then
+        mat=atoms%nat/parini%mpi_env%nproc
+        iats=parini%mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,parini%mpi_env%nproc)
+        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+        iate=iats+mat-1
+    else
+        iats=1
+        iate=atoms%nat
+        !mat=atoms%nat
+    endif
     if(trim(ann_arr%event)/='train') then
         do ib=1,symfunc%linked_lists%maxbound_rad
             iat=symfunc%linked_lists%bound_rad(1,ib)
             jat=symfunc%linked_lists%bound_rad(2,ib)
+            if(iat<iats .or. iat>iate) cycle
             if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1') then
                 qnet=atoms%qat(iat)
             elseif(trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' .or. trim(ann_arr%approach)=='cent2')then

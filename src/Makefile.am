@@ -49,7 +49,13 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 		io_xyz.F90 basic.F90 io_acf.F90 io_vasp.F90 io_cube.F90 \
 		io_yaml_conf.F90 io_bin.F90 \
 		ann_process.F90 ann_io.F90 ann_io_yaml.F90 ann_best_symfunc.F90 \
-		ann_evaluate.F90 ann_train.F90 hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
+		ann_evaluate.F90 ann_train_main.F90 \
+		ann_train_cent1.F90 ann_train_cent2.F90 \
+		ann_train_atom.F90 \
+		ann_refdata.F90 \
+		ann_train_dvec.F90 ann_train_common.F90 ann_train_chi.F90 \
+		hung.F90 ann_check_symmetry_function.F90 ann_gen_symmetry_function.F90 task_ann.F90 \
+		fit_dvec.F90 \
 		symfunc_data_mod.F90 \
 		ann_symfunc_mod.F90 ann_symfunc_atom_behler.F90 ann_symfunc_atom_stefan.F90 \
 		ann_symfunc_pair_behler.F90 \
@@ -101,7 +107,7 @@ SRC_ += definitions_mod.F90 task_mod.F90 \
 if HAVE_LAMMPS
 SRC_ += potential_LAMMPS_interface.F90 potential_LAMMPS.F90 lammps_mod.F90
 AM_FCFLAGS += -DHAVE_LAMMPS
-AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src -DOMPI_SKIP_MPICXX=1 -DMPICH_SKIP_MPICXX -DLAMMPS_LIB_MPI
+AM_CPPFLAGS += -I$(LAMMPS_ROOT)/src -DOMPI_SKIP_MPICXX=1 -DMPICH_SKIP_MPICXX -DLAMMPS_LIB_MPI -DHAVE_LAMMPS
 LIBS += $(LAMMPS_ROOT)/src/liblammps_mpi.a
 endif
 

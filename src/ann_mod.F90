@@ -97,10 +97,10 @@ module mod_ann
         integer:: nann=-1
         integer:: natmax=1000
         integer:: nweight_max=-1
+        integer:: nwtot=0
         logical:: compute_symfunc=.true.
         logical:: cal_force=.true.
         logical:: linear_rho_pot_initiated=.false. 
-        logical:: trial_energy_required=.false.
         character(30):: event='unknown'
         character(50):: approach='unknown'
         character(50):: syslinsolver='unknown'
@@ -202,6 +202,7 @@ subroutine init_ann_arr(self)
         call yaml_map('n',nwtot)
         !write(*,'(a,3i5)') 'EKF: ',self%loc(iann),self%num(iann),nwtot
     enddo
+    self%nwtot=nwtot
     call yaml_sequence_close()
 end subroutine init_ann_arr
 !*****************************************************************************************

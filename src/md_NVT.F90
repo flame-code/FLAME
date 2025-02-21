@@ -524,7 +524,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     real(8):: sumf1, sumf2, sumf3
     real(8):: tau, time_unit
     logical:: lfist= .true.
-    call random_seed() 
+#if defined(MPI)
+    include 'mpif.h'
+#endif
     call get_rat(atoms,rat_init)
     time_unit=41.341373336
 !   dt=parini%dt_dynamics
@@ -557,6 +559,11 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     !file_info%file_position='new' !EHSAN
     !file_info%print_force=parini%print_force_dynamics !EHSAN
     !call acf_write(file_info,atoms=atoms,strkey='trajectory') !EHSAN
+    if(parini%mpi_env%nproc>1) then
+    call update_ratp(atoms)
+    call MPI_BCAST(atoms%ratp,3*atoms%nat,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+    call update_rat(atoms,upall=.true.)
+    endif
 
     !  ___________parameters_______________________________________
     ntherm = parini%ntherm
@@ -623,6 +630,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
     !        read(1001,*) zeta(ith),dzeta(ith) !EHSAN
         enddo
         close(1003)
+        if(parini%mpi_env%nproc>1) then
+        call MPI_BCAST(atoms%ratp,3*atoms%nat,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+        endif
         call update_rat(atoms,upall=.true.)
         call update_ratp(atoms)
         write(21,"(a,i8,a)") "#   *********************** restart from imd:",rmd,"  **************************"
@@ -632,9 +642,12 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
         if ( parini%init_temp_dynamics==0.d0) then
             atoms%vat(:,:)=0.d0
         else
-            call set_velocities(atoms, ekin_target)
+            call set_velocities(atoms,ekin_target,parini%rng_type)
         endif
     endif
+    !if(parini%mpi_env%nproc>1) then
+    !call MPI_BCAST(atoms%vat,3*atoms%nat,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+    !endif
 
     call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
     temp=temp*(1.5d0*atoms%nat)/(0.5*nof)
@@ -747,6 +760,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
                 endif
             enddo
         enddo
+        if(parini%mpi_env%nproc>1) then
+        call MPI_BCAST(atoms%ratp,3*atoms%nat,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+        endif
         call update_rat(atoms)
 
         call cal_potential_forces(parini,atoms)
@@ -762,6 +778,9 @@ subroutine md_nvt_nose_hoover_chain(parini,atoms)
                 endif
             enddo
         enddo
+        if(parini%mpi_env%nproc>1) then
+        call MPI_BCAST(atoms%ratp,3*atoms%nat,MPI_DOUBLE_PRECISION,0,parini%mpi_env%mpi_comm,ierr)
+        endif
         call update_rat(atoms)
         call ekin_temprature(atoms,temp,vcm,rcm,totmass) 
         temp=temp*(1.5d0*atoms%nat)/(0.5*nof)
