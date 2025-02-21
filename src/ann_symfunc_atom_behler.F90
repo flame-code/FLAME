@@ -86,10 +86,26 @@ subroutine symmetry_functions_driver(ann_arr,atoms,mpi_env,iverbose,bondbased_an
     !write(*,*) 'SS3 time ',time3-time2
     !write(*,*) 'SSt time ',time3-time0
     !-------------------------------------------------------------------------------------
-    !if(parini%iverbose>2) then
+    !if(iverbose>2) then
+    !write(77,'(3i8,2x,a)') ann_arr%ann(1)%nn(0),atoms%nat,symfunc%linked_lists%maxbound_rad, &
+    !    'number of descriptor, number of atoms, number of bonds'
     !do iat=1,atoms%nat
     !do ig=1,ann_arr%ann(1)%nn(0)
-    !    write(77,'(2i4,es24.15)') ig,iat,symfunc%y(ig,iat)
+    !    write(77,'(2i4,es25.16)') ig,iat,symfunc%y(ig,iat)
+    !enddo
+    !enddo
+    !do ib=1,symfunc%linked_lists%maxbound_rad
+    !do ig=1,ann_arr%ann(1)%nn(0)
+    !    write(77,'(2i4,3es25.16)') ig,ib, &
+    !        symfunc%y0d(ig,1,ib),symfunc%y0d(ig,2,ib),symfunc%y0d(ig,3,ib)
+    !enddo
+    !enddo
+    !do ib=1,symfunc%linked_lists%maxbound_rad
+    !do ig=1,ann_arr%ann(1)%nn(0)
+    !    write(77,'(2i4,9es25.16)') ig,ib, &
+    !        symfunc%y0dr(ig,1,ib),symfunc%y0dr(ig,2,ib),symfunc%y0dr(ig,3,ib), &
+    !        symfunc%y0dr(ig,4,ib),symfunc%y0dr(ig,5,ib),symfunc%y0dr(ig,6,ib), &
+    !        symfunc%y0dr(ig,7,ib),symfunc%y0dr(ig,8,ib),symfunc%y0dr(ig,9,ib)
     !enddo
     !enddo
     !endif
@@ -124,9 +140,9 @@ subroutine symmetry_functions_g02_atom(ann_arr,pia,ib,iat,isat,jsat,symfunc)
     do ig=1,ann_arr%ann(isat)%ng2
         i0=i0+1
         if((ann_arr%ann(isat)%g2i(ig)/=0).and.(.not.(jsat==ann_arr%ann(isat)%g2i(ig)))) cycle
-        rs=ann_arr%ann(jsat)%g2rs(ig)
+        rs=ann_arr%ann(isat)%g2rs(ig)
         !The central atom is i:
-        etaj=ann_arr%ann(jsat)%g2eta(ig)
+        etaj=ann_arr%ann(isat)%g2eta(ig)
 
         vi=exp(-etaj*(pia%r-rs)**2) * factor
 
@@ -267,8 +283,8 @@ subroutine symmetry_functions_g05_atom(ann_arr,piaij,piaik,ibij,ibik,iat,isat,js
         zeta=ann_arr%ann(isat)%g5zeta(ig)
         alam=ann_arr%ann(isat)%g5lambda(ig)
         etai=ann_arr%ann(isat)%g5eta(ig)
-        etaj=ann_arr%ann(jsat)%g5eta(ig)
-        etak=ann_arr%ann(ksat)%g5eta(ig)
+        etaj=ann_arr%ann(isat)%g5eta(ig)
+        etak=ann_arr%ann(isat)%g5eta(ig)
         zzz=2.d0**(1.d0-zeta)
         ui=(1.0000000000001d0+alam*cos_theta_i)**zeta
         vi=exp(-(etaj*rijsq+etak*riksq))*factor

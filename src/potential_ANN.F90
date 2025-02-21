@@ -16,11 +16,7 @@ subroutine init_potential_ann(parini,atoms)
     !call count_words(parini%stypat_ann,ann_arr%nann)
     ann_arr%approach=trim(parini%approach_ann)
     !write (*,*) 'parini         ', ann_arr%approach
-    if(parini%bondbased_ann) then
-        call ann_arr%set_number_of_ann(4)
-    else
-        call ann_arr%set_number_of_ann(parini%ntypat)
-    endif
+    call ann_arr%set_number_of_ann(parini%ntypat)
     if(ann_arr%nann==0) stop 'ERROR: number of type of atoms zero in init_potential_ann'
     call yaml_map('number of ANN',ann_arr%nann)
     !write(*,*) 'ann_arr%nann= ',ann_arr%nann
@@ -39,15 +35,7 @@ subroutine init_potential_ann(parini,atoms)
             endif
         enddo
     enddo
-    if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
-        if(parini%ntypat>1) then
-            stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
-        endif
-        !write(fn_tt,'(i1)') iann
-        fname=trim(parini%stypat(1))//'1'//'.ann.param.yaml'
-    else
-        fname = trim(parini%stypat(1))//'.ann.param.yaml'
-    endif
+    fname=trim(parini%stypat(1))//'.ann.param.yaml'
     inquire(file=trim(fname),exist=ann_arr%exists_yaml_file)
     if( ann_arr%exists_yaml_file) then
         call read_ann_yaml(parini,ann_arr)

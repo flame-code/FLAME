@@ -1,4 +1,5 @@
-subroutine random_atom(LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_KINDS,NKINDS,KINDS,NGUESS,KINDSDIST_MIN,RXYZ,RED_POS_PRIM,LATVEC_PRIM)
+
+subroutine random_atom(gensymcrys,LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_KINDS,NKINDS,KINDS,NGUESS,KINDSDIST_MIN,RXYZ,RED_POS_PRIM,LATVEC_PRIM)
 !Idea of this subroutine: suppose that sg_ops has already been called and RSYM, etc is provided
 !1.) Get symmetry operations 
 !2.) Get the random sampling of atomic positions 
@@ -6,7 +7,9 @@ subroutine random_atom(LATSGP,CRYSSYS,BRAV,NSYMP,NSYM,RSYM,NSYMMAX,NAT_CELL,NAT_
 !4.) Expand the primitive cell to check if the new atom is acceptable
 !5.) accept/reject the position and cycle
 
+    use mod_gensymcrys, only: typ_gensymcrys
 implicit none
+    type(typ_gensymcrys), intent(in):: gensymcrys
 INTEGER:: LATSGP, CRYSSYS,BRAV, NAT_CELL,NKINDS, NGUESS,KINDS(NAT_CELL),NAT_KINDS(NKINDS),NSYMP,NSYM,NSYMMAX,COUNT_LOOP
 integer:: sumkinds,i,iat,k,l,m,iat_cur,iat_cur1,ikind, counter,NPOS,IPOS,iat_cur_oldsym,counter_old,errcount
 real(8):: RSYM(4,4,NSYMMAX),RED_POS(3,NGUESS),RED_POS_PRIM(3,NAT_CELL),RXYZ(3,NAT_CELL),LATVEC_PRIM(3,3),KINDSDIST_MIN(NKINDS,NKINDS)
@@ -14,12 +17,18 @@ real(8):: rand,SYM_POS_PRIM(3,NSYMMAX),rxyz_tmp(3),POS(3),dist,dist_count
 real(8):: transvecall(3,3,3,3)
 real(8),allocatable:: rxyzout(:,:,:,:,:)
 logical:: fail
+!real(8):: latvec_prim_transpose(3,3)
+!real(8):: time1, time2
+!real(8), save:: dtime1=0.d0, dtime2=0.d0
+!latvec_prim_transpose=transpose(latvec_prim)
 !Do some checking first
 COUNT_LOOP=0
 sumkinds=0
 do i=1,nkinds
   sumkinds=sumkinds+nat_kinds(i)
+  if(gensymcrys%iverbose>1) then
   write(*,*) "nat_kinds(i)",nat_kinds(i)
+  endif
 enddo
 if(NAT_CELL.ne.sumkinds) stop "Number of atoms in cell not consistent with number of atom kinds"
 if(NAT_CELL.gt.NGUESS) stop "Increase NGUESS for appropriate unit cell sampling"
@@ -30,7 +39,9 @@ if(NAT_CELL.gt.NGUESS) stop "Increase NGUESS for appropriate unit cell sampling"
 
 !2.) call random atom in conventional cell sampling 
 1060 continue
+if(gensymcrys%iverbose>1) then
 write(*,*) "Starting (over) new generation", COUNT_LOOP
+endif
 if(COUNT_LOOP.gt.20) then
 write(*,*) "No structure found that fit the requirements. Exiting"
 kinds=0
@@ -39,11 +50,15 @@ endif
 iat_cur=0
 kinds=0
 errcount=0
+if(gensymcrys%iverbose>1) then
 write(*,*) "NKINDS",nkinds
 write(*,*) "NAT_CELL",nat_cell
+endif
 
 call random_incell_main(LATSGP,CRYSSYS,NGUESS,RED_POS)
+if(gensymcrys%iverbose>1) then
 write(*,*) "Incell called"
+endif
 do ikind=1,nkinds
 dist_count=0
 !  write(*,*)"nat_kinds(ikind)",nat_kinds(ikind)
@@ -51,7 +66,9 @@ counter=0
   do 
 1040 continue
     if(dist_count.gt.NAT_CELL*NGUESS) then
+       if(gensymcrys%iverbose>1) then
        write(*,*) "Volume probably too small, exiting"
+       endif
        kinds=0
        return 
     endif
@@ -61,7 +78,9 @@ counter=0
 1070 continue
     call random_number(rand)
     i=int(rand*real(NGUESS,8))+1
-    POS(:)=RED_POS(:,i)
+    POS(1)=RED_POS(1,i)
+    POS(2)=RED_POS(2,i)
+    POS(3)=RED_POS(3,i)
     call create_unique_positions(RSYM,NSYMP,NSYM,BRAV,POS,SYM_POS_PRIM,NPOS,NSYMMAX)
     
 !3.) check each of the new positions that were generated and accept/reject the positions according
@@ -72,23 +91,32 @@ counter=0
       errcount=errcount+1
       if (errcount.gt.NAT_CELL*NGUESS) then
          count_loop=count_loop+1
-         write(15,*) "going to 1060"
+         !write(15,*) "going to 1060"
          goto 1060
       endif
-      write(15,*) "going to 1070"
+      !write(15,*) "going to 1070"
       goto 1070
     endif
     do ipos=1,npos
+    !call cpu_time(time1)
     rxyz_tmp=matmul(LATVEC_PRIM,SYM_POS_PRIM(:,ipos)) 
+    !call my_matmul_len3(LATVEC_PRIM,SYM_POS_PRIM(1,ipos),rxyz_tmp)
+    !call my_matmul_len3_transpose(latvec_prim_transpose,SYM_POS_PRIM(1,ipos),rxyz_tmp)
+    !call cpu_time(time2)
+    !dtime2=dtime2+(time2-time1)
+    !write(*,'(a,f10.3)') 'TIME2= ',dtime2
     fail=.false.     
 !    if(iat_cur.eq.0) write(15,*) "going to 1030",iat_cur
 !    if(iat_cur.eq.0) goto 1030
     iat_cur1=iat_cur+1 
     allocate(rxyzout(3,iat_cur1,3,3,3)) 
-    rxyz(:,iat_cur1)=rxyz_tmp(:)
+    rxyz(1,iat_cur1)=rxyz_tmp(1)
+    rxyz(2,iat_cur1)=rxyz_tmp(2)
+    rxyz(3,iat_cur1)=rxyz_tmp(3)
     kinds(iat_cur1)=ikind
     call expand_gensymcrys(rxyz,rxyzout,transvecall,latvec_prim,iat_cur1)
-    write(15,*) "expanded"
+    !write(15,*) "expanded"
+    !call cpu_time(time1)
        do k=1,3
         do l=1,3
          do m=1,3
@@ -102,7 +130,7 @@ counter=0
                if(dist.lt.KINDSDIST_MIN(ikind,kinds(iat))**2) then
                  fail=.true.
                  deallocate(rxyzout)
-                 write(15,*) "going to 1030"
+                 !write(15,*) "going to 1030"
                  goto 1030
                endif
             1090 continue
@@ -110,48 +138,109 @@ counter=0
          enddo
         enddo
        enddo 
+    !call cpu_time(time2)
+    !dtime1=dtime1+(time2-time1)
+    !write(*,'(a,f10.3)') 'TIME1= ',dtime1
      deallocate(rxyzout)
 1030 continue
        if(fail) then
          dist_count=dist_count+1
          iat_cur=iat_cur_oldsym
          counter=counter_old
-         write(15,*) "going to 1040"
+         !write(15,*) "going to 1040"
          goto 1040
        else
          iat_cur=iat_cur+1
          counter=counter+1
-         RXYZ(:,iat_cur)=rxyz_tmp
-         RED_POS_PRIM(:,iat_cur)=SYM_POS_PRIM(:,ipos)
+         RXYZ(1,iat_cur)=rxyz_tmp(1)
+         RXYZ(2,iat_cur)=rxyz_tmp(2)
+         RXYZ(3,iat_cur)=rxyz_tmp(3)
+         RED_POS_PRIM(1,iat_cur)=SYM_POS_PRIM(1,ipos)
+         RED_POS_PRIM(2,iat_cur)=SYM_POS_PRIM(2,ipos)
+         RED_POS_PRIM(3,iat_cur)=SYM_POS_PRIM(3,ipos)
          kinds(iat_cur)=ikind
 !         write(*,*) "NPOS",npos,counter,iat_cur
-         if(ipos==1) write(15,*)"r", RXYZ(:,iat_cur)
-         if(ipos==1) write(15,*)"p", RED_POS_PRIM(:,iat_cur)
-         if(ipos==1)  write(15,*) "i",iat_cur,counter
-         if(counter.ge.nat_kinds(ikind))write(15,*) "going to 1050"
+         !if(ipos==1) write(15,*)"r", RXYZ(:,iat_cur)
+         !if(ipos==1) write(15,*)"p", RED_POS_PRIM(:,iat_cur)
+         !if(ipos==1)  write(15,*) "i",iat_cur,counter
+         !if(counter.ge.nat_kinds(ikind))write(15,*) "going to 1050"
          if(counter.ge.nat_kinds(ikind))goto 1050 
        endif
     enddo
-  write(15,*) "Accepted"
+  !write(15,*) "Accepted"
   enddo
 1050 continue   
 enddo
 
+if(gensymcrys%iverbose>1) then
 write(*,*) "Finished random atoms"
+endif
 if(nat_cell.ne.iat_cur)then
 
 write(*,*) "Something wrong with atom numbers",nat_cell,iat_cur
 endif
 
+contains
+pure subroutine my_matmul_len3(a,b,c)
+    implicit none
+    real(8), intent(in):: a(3,3), b(3)
+    real(8), intent(out):: c(3)
+    c(1)=a(1,1)*b(1)+a(1,2)*b(2)+a(1,3)*b(3)
+    c(2)=a(2,1)*b(1)+a(2,2)*b(2)+a(2,3)*b(3)
+    c(3)=a(3,1)*b(1)+a(3,2)*b(2)+a(3,3)*b(3)
+end subroutine my_matmul_len3
+pure subroutine my_matmul_len3_transpose(a,b,c)
+    implicit none
+    real(8), intent(in):: a(3,3), b(3)
+    real(8), intent(out):: c(3)
+    c(1)=a(1,1)*b(1)+a(2,1)*b(2)+a(3,1)*b(3)
+    c(2)=a(1,2)*b(1)+a(2,2)*b(2)+a(3,2)*b(3)
+    c(3)=a(1,3)*b(1)+a(2,3)*b(2)+a(3,3)*b(3)
+end subroutine my_matmul_len3_transpose
 end subroutine
+
+pure subroutine expand_gensymcrys(rxyz,rxyzout,transvecall,latvec,nat)
+!This subroutine will expand the unit cell into 26 periodic cells and store them in rxyzout
+implicit none
+real*8, intent(in)  :: rxyz(3,nat),latvec(3,3)
+integer, intent(in) :: nat
+real*8, intent(out) :: rxyzout(3,nat,3,3,3) !26 periodic images plus the main cell
+integer             :: iat,iplane,icorner,iedge,m,k,l
+real*8,intent(inout):: transvecall(3,3,3,3)!,(transvecp(3,6),transvecc(3,8),transvece(3,12)
+do m=-1,1
+   do k=-1,1
+      do l=-1,1
+      transvecall(1,l+2,k+2,m+2)=real(l,8)*latvec(1,1)+real(k,8)*latvec(1,2)+real(m,8)*latvec(1,3)
+      transvecall(2,l+2,k+2,m+2)=real(l,8)*latvec(2,1)+real(k,8)*latvec(2,2)+real(m,8)*latvec(2,3)
+      transvecall(3,l+2,k+2,m+2)=real(l,8)*latvec(3,1)+real(k,8)*latvec(3,2)+real(m,8)*latvec(3,3)
+      enddo
+   enddo
+enddo
+do m=1,3
+   do k=1,3
+      do l=1,3
+      do iat=1,nat
+      rxyzout(1,iat,l,k,m)=rxyz(1,iat)+transvecall(1,l,k,m)
+      rxyzout(2,iat,l,k,m)=rxyz(2,iat)+transvecall(2,l,k,m)
+      rxyzout(3,iat,l,k,m)=rxyz(3,iat)+transvecall(3,l,k,m)
+      enddo
+      enddo
+   enddo
+enddo
+end subroutine expand_gensymcrys
 
 
 subroutine create_unique_positions(RSYM,NSYMP,NSYM,BRAV,POS,SYM_POS_PRIM,NPOS,NSYMMAX)
 implicit none
-integer::NSYMP,NSYM,BRAV,NPOS,NSYMMAX,iat,jat
-real(8)::RSYM(4,4,NSYMMAX),POS(3),OUT_POS(3),transmat(3,3),SYM_POS_PRIM(3,NSYMMAX)
+real(8), intent(in):: RSYM(4,4,NSYMMAX), POS(3)
+real(8), intent(out):: SYM_POS_PRIM(3,NSYMMAX)
+integer, intent(in):: NSYMP, NSYM, BRAV, NSYMMAX
+integer, intent(out):: NPOS
+!local variables
+integer::iat,jat
+real(8)::OUT_POS(3),transmat(3,3)
 real(8):: tol,dist,rx1,ry1,rz1,rx2,ry2,rz2
-write(15,*) "NEW"
+!write(15,*) "NEW"
 tol=1.d-8
 call  conv2prim(BRAV,transmat)
 NPOS=1
@@ -161,11 +250,11 @@ OUT_POS(1)=modulo(modulo(OUT_POS(1),1.d0),1.d0)
 OUT_POS(2)=modulo(modulo(OUT_POS(2),1.d0),1.d0)
 OUT_POS(3)=modulo(modulo(OUT_POS(3),1.d0),1.d0)
 SYM_POS_PRIM(:,NPOS)=OUT_POS
-write(15,*)SYM_POS_PRIM(:,NPOS)
+!write(15,*)SYM_POS_PRIM(:,NPOS)
 
 !Outer loop goes over all symmetry operations
 do iat=1,NSYM
-call APPLY_SYMOP(RSYM(:,:,iat),POS,OUT_POS)
+call APPLY_SYMOP(RSYM(1,1,iat),POS,OUT_POS)
 OUT_POS=matmul(transmat,OUT_POS)
 OUT_POS(1)=modulo(modulo(OUT_POS(1),1.d0),1.d0)
 OUT_POS(2)=modulo(modulo(OUT_POS(2),1.d0),1.d0)
@@ -181,23 +270,32 @@ rx1=OUT_POS(1);ry1=OUT_POS(2);rz1=OUT_POS(3)
       if(dist.lt.tol) goto 1020 
    enddo 
    NPOS=NPOS+1
-   SYM_POS_PRIM(:,NPOS)=OUT_POS
-   write(15,*)SYM_POS_PRIM(:,NPOS)
+   SYM_POS_PRIM(1,NPOS)=OUT_POS(1)
+   SYM_POS_PRIM(2,NPOS)=OUT_POS(2)
+   SYM_POS_PRIM(3,NPOS)=OUT_POS(3)
+   !write(15,*)SYM_POS_PRIM(:,NPOS)
 1020 continue
 enddo
 
-   write(15,*)NPOS
+   !write(15,*)NPOS
 
 end subroutine
 
 
-subroutine APPLY_SYMOP(SYMOP,IN_POS,OUT_POS)
+pure subroutine APPLY_SYMOP(SYMOP,IN_POS,OUT_POS)
 implicit none
-real(8):: SYMOP(4,4),IN_POS(3),OUT_POS(3),tmp1(4),tmp2(4)
-tmp1(1:3)=IN_POS(1:3)
+real(8), intent(in):: SYMOP(4,4), IN_POS(3)
+real(8), intent(out):: OUT_POS(3)
+!local variables
+real(8):: tmp1(4), tmp2(4)
+tmp1(1)=IN_POS(1)
+tmp1(2)=IN_POS(2)
+tmp1(3)=IN_POS(3)
 tmp1(4)=1.d0
 tmp2=matmul(SYMOP,tmp1)
-OUT_POS=tmp2(1:3)
+OUT_POS(1)=tmp2(1)
+OUT_POS(2)=tmp2(2)
+OUT_POS(3)=tmp2(3)
 end subroutine
 
 
@@ -217,7 +315,7 @@ call random_incell_main(LATSGP,CRYSSYS,NGUESS,RED_POS)
 do i=1,NGUESS
 POS(:)=RED_POS(:,i)
 call create_unique_positions(RSYM,NSYMP,NSYM,BRAV,POS,SYM_POS_PRIM,NPOS,NSYMMAX)
-write(16,*) NPOS
+!write(16,*) NPOS
 
 if(i==1) then
   NPOS_IRRED=NPOS_IRRED+1

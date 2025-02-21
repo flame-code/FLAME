@@ -7,7 +7,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
     use mod_ann, only: typ_ann_arr, convert_ann_epotd
     use mod_symfunc, only: typ_symfunc
     use mod_linkedlists, only: typ_linkedlists
-    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_grad
+    use mod_opt_ann, only: typ_opt_ann
     use mod_linked_lists, only: typ_pia_arr, typ_linked_lists
     use dynamic_memory
     implicit none
@@ -134,7 +134,7 @@ subroutine cal_ann_tb(parini,partb,atoms,ann_arr,symfunc,opt_ann)
                     ann_grad(j,i)=tt1
                 enddo
             enddo
-            call set_opt_ann_grad(ann_arr,ann_grad,opt_ann)
+            call set_opt_ann_grad(ann_arr,ann_grad,opt_ann%n,opt_ann%g)
         endif
     deallocate(hgen)
     deallocate(dhgen)
@@ -242,7 +242,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     use mod_atoms, only: typ_atoms, atom_allocate_old, set_rat_iat, update_ratp
     use mod_ann, only: typ_ann_arr, convert_x_ann
     use mod_symfunc, only: typ_symfunc
-    use mod_opt_ann, only: typ_opt_ann, get_opt_ann_x, set_opt_ann_x
+    use mod_opt_ann, only: typ_opt_ann, set_opt_ann_x
     use mod_parlm, only: typ_parlm
     use dynamic_memory
     implicit none
@@ -262,6 +262,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     real(8), allocatable:: grad(:,:)
     real(8):: hgen_ltb(4,325), dis_ltb(325)
     real(8), allocatable:: x_arr(:,:)
+    real(8), allocatable:: x(:)
     character(10):: str_tmp
     call atom_allocate_old(atoms,2,0,0)
     atoms%boundcond='free'
@@ -306,9 +307,11 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     m=325
     parlm%n=opt_ann%n/4
     x_arr=f_malloc([1.to.ann_arr%nweight_max,1.to.ann_arr%nann],id='x_arr')
+    x=f_malloc([1.to.opt_ann%n],id='x')
     do iann=1,4
     call init_lmder_modified(parlm,m,m)
-    call get_opt_ann_x(ann_arr,opt_ann,x_arr)
+    call opt_ann%get_opt_ann_x(opt_ann%n,x)
+    call convert_x_to_x_arr(ann_arr,opt_ann%n,x,x_arr)
     !parlm%x(1:parlm%n)=opt_ann%x(opt_ann%loc(iann):opt_ann%loc(iann)+ann_arr%num(1)-1)
     parlm%x(1:parlm%n)=x_arr(1:parlm%n,iann)
     do
@@ -334,6 +337,7 @@ subroutine fit_hgen(parini,ann_arr,opt_ann)
     enddo
     !-------------------------------------------------------
     call f_free(x_arr)
+    call f_free(x)
     deallocate(grad)
     deallocate(ann_arr%g_per_bond)
 end subroutine fit_hgen
@@ -410,4 +414,20 @@ subroutine fcn_hgen(m,n,x,fvec,fjac,ldfjac,iflag,iann,ann_arr,hgen_ltb,yall)
     deallocate(hgen)
     deallocate(dhgen)
 end subroutine fcn_hgen
+!*****************************************************************************************
+subroutine convert_x_to_x_arr(ann_arr,n,x,x_arr)
+    use mod_ann, only: typ_ann_arr
+    implicit none
+    type(typ_ann_arr), intent(in):: ann_arr
+    integer, intent(in):: n
+    real(8), intent(in):: x(n)
+    real(8), intent(out):: x_arr(ann_arr%nweight_max,ann_arr%nann)
+    !local variables
+    integer:: i, j
+    do i=1,ann_arr%nann
+        do j=1,ann_arr%num(i)
+            x_arr(j,i)=x(ann_arr%loc(i)+j-1)
+        enddo
+    enddo
+end subroutine convert_x_to_x_arr
 !*****************************************************************************************

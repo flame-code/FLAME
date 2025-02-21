@@ -95,6 +95,7 @@
 !end program convert
 !
 subroutine get_spg(num_atom,positions,lattice,atom_types,symprec,spg)
+#if defined(SPGLIB)
   use spglib_f08
   use yaml_output
 implicit none
@@ -144,13 +145,16 @@ integer:: nat, typat(num_atom), spg
      write(*,'(a)') " # SPGLIB: Space group could not be found"
   end if
   spg=dset % spacegroup_number  
-
+#else
+    stop 'ERROR: FLAME is not linked with SPGLIB, this routine should not be called!'
+#endif
 end subroutine
 
 
 !************************************************************************************
 
 subroutine spg_cell_refine(nat_in,nat_out,nat_max,positions,lattice,atom_types,symprec,spg)
+#if defined(SPGLIB)
   use spglib_f08
 implicit none
 integer:: nat, spg
@@ -196,11 +200,15 @@ integer:: nat, spg
 
   nat_out=spg_refine_cell( lattrans, positions, atom_types, nat_in, symprec)
   lattice=transpose(lattrans)
+#else
+    stop 'ERROR: FLAME is not linked with SPGLIB, this routine should not be called!'
+#endif
 end subroutine
 
 !************************************************************************************
 
 subroutine spg_cell_primitive(nat_in,nat_out,nat_max,positions,lattice,atom_types,symprec,spg)
+#if defined(SPGLIB)
   use spglib_f08
 implicit none
 integer:: nat, spg
@@ -246,6 +254,9 @@ integer:: nat, spg
 
   nat_out=spg_find_primitive( lattrans, positions, atom_types, nat_in, symprec)
   lattice=transpose(lattrans)
+#else
+    stop 'ERROR: FLAME is not linked with SPGLIB, this routine should not be called!'
+#endif
 end subroutine
 
 

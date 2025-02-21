@@ -247,13 +247,11 @@
    syslinsolver: direct
    rgnrmtol: 5.E-4
    qgnrmtol: 5.E-4
-   etol: 1.0
-   dtol: 1.0
+   tol_incompatible: [1.E10,0.0]
    ftol: 1.E-4
    normalization: False
    bondbased: False
    prefit: False
-   prefit_centt: False
    read_forces: True
    restart_param: False
    restart_iter : 0
@@ -263,6 +261,8 @@
    weight_hardness: 0.0
    save_symfunc_behnam: False
    freeBC_direct: False
+   pickdiffconfs: False
+   dtol: 0.0
  dynamics:
   nmd: 300
   nfreq: 0

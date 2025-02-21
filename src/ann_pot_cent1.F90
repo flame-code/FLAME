@@ -7,6 +7,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     use mod_electrostatics, only: typ_poisson
     use mod_linked_lists, only: typ_pia_arr
     use mod_linkedlists, only: typ_linkedlists
+    use wrapper_MPI, only: fmpi_allreduce, FMPI_SUM
     use dynamic_memory
     use yaml_output
     implicit none
@@ -18,6 +19,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     !local variables
     type(typ_pia_arr):: pia_arr_tmp
     integer:: iat, i, j, ng
+    integer:: iats, iate, mat, mproc
     real(8):: epot_c, out_ann
     real(8):: time1, time2, time3, time4, time5, time6, time7, time8
     real(8):: tt1, tt2, tt3, fx_es, fy_es, fz_es, hinv(3,3), vol
@@ -57,11 +59,29 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
         allocate(ann_arr%fatpq(1:3,1:symfunc%linked_lists%maxbound_rad))
         allocate(ann_arr%stresspq(1:3,1:3,1:symfunc%linked_lists%maxbound_rad))
     endif
+    if(parini%mpi_env%nproc>1) then
+        mat=atoms%nat/parini%mpi_env%nproc
+        iats=parini%mpi_env%iproc*mat+1
+        mproc=mod(atoms%nat,parini%mpi_env%nproc)
+        iats=iats+max(0,parini%mpi_env%iproc-parini%mpi_env%nproc+mproc)
+        if(parini%mpi_env%iproc>parini%mpi_env%nproc-mproc-1) mat=mat+1
+        iate=iats+mat-1
+    else
+        iats=1
+        iate=atoms%nat
+        !mat=atoms%nat
+    endif
     if(parini%iverbose>=2) call cpu_time(time3)
     over_iat: do iat=1,atoms%nat
+        if(iat<iats .or. iat>iate) cycle
+        !if(mod(iat,parini%mpi_env%nproc)==parini%mpi_env%iproc) then
         i=atoms%itypat(iat)
         ng=ann_arr%ann(i)%nn(0)
-        ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat)
+        !if(ann_arr%compute_symfunc) then
+        !    ann_arr%ann(i)%y(1:ng,0)=ann_arr%yall(1:ng,iat)
+        !else
+            ann_arr%ann(i)%y(1:ng,0)=symfunc%y(1:ng,iat)
+        !endif
         if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
             call cal_architecture(ann_arr%ann(i),out_ann)
             call cal_force_chi_part1(parini,symfunc,iat,atoms,out_ann,ann_arr)
@@ -76,6 +96,12 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
             stop 'ERROR: undefined content for ann_arr%event'
         endif
     enddo over_iat
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(ann_arr%chi_o(1),atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    if(trim(ann_arr%event)=='train') then
+        stop 'ERROR: train CENT1 in MPI parallel. something for future!'
+    endif
+    endif
     !This must be here since contribution from coulomb
     !interaction is calculated during the process of charge optimization.
     if(parini%iverbose>=2) call cpu_time(time4)
@@ -86,6 +112,12 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
     if(trim(ann_arr%event)=='potential' .or. trim(ann_arr%event)=='evalu') then
         call cal_force_chi_part2(parini,symfunc,atoms,ann_arr)
     endif !end of if for potential
+    if(parini%mpi_env%nproc>1) then
+    call fmpi_allreduce(atoms%fat(1,1),3*atoms%nat,op=FMPI_SUM,comm=parini%mpi_env%mpi_comm)
+    if(trim(ann_arr%event)=='train') then
+        stop 'ERROR: train CENT1 in MPI parallel. something for future!'
+    endif
+    endif
     if(parini%iverbose>=2) call cpu_time(time6)
     call get_electrostatic_cent1(parini,atoms,ann_arr,epot_c,ann_arr%a,poisson)
     if(parini%iverbose>=2) then
@@ -143,6 +175,7 @@ subroutine cal_ann_cent1(parini,atoms,symfunc,ann_arr)
         atoms%celldv(i,j)=vol*(atoms%stress(i,1)*hinv(j,1)+atoms%stress(i,2)*hinv(j,2)+atoms%stress(i,3)*hinv(j,3))
     enddo
     enddo
+
 
     deallocate(symfunc%linked_lists%prime_bound)
     deallocate(symfunc%linked_lists%bound_rad)

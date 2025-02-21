@@ -96,10 +96,10 @@ module mod_parini
         real(8):: etol_ann !the tolerance difference of energies of two configuration
         real(8):: dtol_ann !distance between two FP
         real(8):: ftol_ann !tolerance for simplex method
+        real(8):: dtol_pickdiffconfs=0.d0
         real(8):: weight_hardness
         logical:: normalization_ann=.false.
         logical:: prefit_ann=.false.
-        logical:: prefit_centt_ann=.false.
         logical:: read_forces_ann
         logical:: restart_param=.false. 
         integer:: restart_iter=0  
@@ -108,6 +108,7 @@ module mod_parini
         logical:: save_symfunc_force_ann=.false.
         logical:: save_symfunc_behnam=.false.
         logical:: free_bc_direct=.false.
+        logical:: pickdiffconfs=.false.
         !-----------------------------------------------------------------------
         !parameters of [saddle]
         character(50):: method_saddle='unknown'

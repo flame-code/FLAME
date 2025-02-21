@@ -3,6 +3,10 @@
 #include <stdio.h>
 #include "defines.h"
 
+void setuptb(potl_type *,int,int);
+void setuptb2(double,int);
+void clssplint(spline_type *,double,double *,double *,int);
+
 #define EBCC 0.0 
 
 #define PHIEXTRAPOLATIONTYPE 0 /*Use 0 for linear, 1 for 1/r and 1/r/r */ 

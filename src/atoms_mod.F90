@@ -80,7 +80,6 @@ module mod_atoms
         type(typ_atoms), allocatable:: atoms(:)
         integer:: nconfmax=-1 !maximum number of configurations
         integer:: nconf=-1 !number of configurations
-        !integer, allocatable:: inclusion(:)
         character(50), allocatable:: fn(:)
         integer, allocatable:: lconf(:)
         logical, allocatable:: conf_inc(:)

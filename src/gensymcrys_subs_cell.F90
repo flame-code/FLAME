@@ -220,37 +220,6 @@
  end
 
 !************************************************************************************
-
- subroutine expand_gensymcrys(rxyz,rxyzout,transvecall,latvec,nat)
- !This subroutine will expand the unit cell into 26 periodic cells and store them in rxyzout
- implicit none
- real*8, intent(in)  :: rxyz(3,nat),latvec(3,3)
- integer, intent(in) :: nat
- real*8, intent(out) :: rxyzout(3,nat,3,3,3) !26 periodic images plus the main cell
- integer             :: iat,iplane,icorner,iedge,m,k,l
- real*8,intent(inout):: transvecall(3,3,3,3)!,(transvecp(3,6),transvecc(3,8),transvece(3,12)
-
- do m=-1,1
-    do k=-1,1
-       do l=-1,1
-       transvecall(:,l+2,k+2,m+2)=real(l,8)*latvec(:,1)+real(k,8)*latvec(:,2)+real(m,8)*latvec(:,3)
-       enddo
-    enddo
- enddo
-
- do m=1,3
-    do k=1,3
-       do l=1,3
-       do iat=1,nat
-       rxyzout(:,iat,l,k,m)=rxyz(:,iat)+transvecall(:,l,k,m)
-       enddo
-       enddo
-    enddo
- enddo
- end
-
-!************************************************************************************
- 
  subroutine invertmat_gensymcrys(mat,matinv,n)
  implicit none
  real(8),intent(in) :: mat(n,n)

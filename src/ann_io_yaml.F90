@@ -9,7 +9,7 @@ module mod_ann_io_yaml
     public:: write_yaml_conf_train
 contains
 !*****************************************************************************************
-subroutine read_input_ann_yaml(parini,iproc,ann_arr)
+subroutine read_input_ann_yaml(parini,iproc,ann_arr,path)
     use futile
     use mod_parini, only: typ_parini
     use mod_ann, only: typ_ann_arr
@@ -18,6 +18,7 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     type(typ_parini), intent(in):: parini
     integer, intent(in):: iproc
     type(typ_ann_arr), intent(inout):: ann_arr
+    character(len=*), optional, intent(in):: path
     !local variables
     integer:: ios, iann, i, j
     character(50):: fname,str1
@@ -27,13 +28,14 @@ subroutine read_input_ann_yaml(parini,iproc,ann_arr)
     !call yaml_new_document()
     call yaml_sequence_open('ann input files') !,flow=.true.)
     do iann=1,ann_arr%nann
-        if(parini%bondbased_ann) then
-            stypat=parini%stypat(1)
-        else
-            stypat=parini%stypat(iann)
-        endif
+        stypat=parini%stypat(iann)
         !-------------------------------------------------------
-        fname = trim(stypat)//'.ann.input.yaml'
+        if(present(path)) then
+            fname=trim(path)//'/'
+        else
+            fname='./'
+        endif
+        fname=trim(fname)//trim(stypat)//'.ann.input.yaml'
         call yaml_sequence(advance='no')
         call yaml_comment(trim(fname))
         !write(*,*)trim(fname)
@@ -68,6 +70,12 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     character(50):: str_out_ann
     character(5):: str_out_ann_tt
     real(8):: wa(2)
+    logical:: exists_yaml_file
+    inquire(file=trim(fname),exist=exists_yaml_file)
+    if(.not. exists_yaml_file) then
+        write(*,'(2a)') 'ERROR: ANN parameter file does not exist: ',trim(fname)
+        stop
+    endif
     call set_dict_ann(ann,fname,stypat)
     !call yaml_comment('USER INPUT FILE',hfill='~')
     if(parini%iverbose>=2) call yaml_dict_dump(ann%dict)
@@ -92,7 +100,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     ann%method         =  subdict_ann//"method"
     ann%ener_ref       =  subdict_ann//"ener_ref" 
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
-         trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' &
+         trim(parini%approach_ann)=='cent2' &
         .or. trim(parini%approach_ann)=='cent3') then
         ann%ampl_chi       =  subdict_ann//"ampl_chi" 
         ann%prefactor_chi  =  subdict_ann//"prefactor_chi" 
@@ -103,7 +111,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         ann%chi0           =  subdict_ann//"chi0" 
         ann%qinit          =  subdict_ann//"qinit"
     endif
-    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
+    if(trim(parini%approach_ann)=='cent2' .or. trim(parini%approach_ann)=='cent3') then
         if(trim(parini%approach_ann)=='cent2') then
             wa=subdict_ann//"gwz"
             ann%gwz=wa(1)
@@ -180,7 +188,7 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
         call yaml_mapping_close()
         !write(*,'(a,6i4)') 'ng1,ng2,ng3,ng4,ng5,ng6 ',ann%ng1,ann%ng2,ann%ng3,ann%ng4,ann%ng5,ann%ng6
     endif
-    if(.not. parini%bondbased_ann .and. ann%ng1>0) then
+    if(ann%ng1>0) then
         stop 'ERROR: symmetry function of type G3 not implemented yet.'
     endif
     if(ann%ng3>0) stop 'ERROR: symmetry function of type G3 not implemented yet.'
@@ -191,11 +199,8 @@ subroutine get_symfunc_parameters_yaml(parini,iproc,fname,ann,rcut)
     dict_tmp=>dict_iter(subdict_ann)
     do while(associated(dict_tmp))
         tt=trim(dict_key(dict_tmp))
-
         if (tt(1:3)=="g01") then
-            if(.not. parini%bondbased_ann) then
-                stop 'ERROR: g1 is not ready.'
-            endif
+            stop 'ERROR: g1 is not ready.'
             count1=count1+1
             i0=i0+1
             str1=subdict_ann//tt
@@ -316,19 +321,8 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
     else
         write(fn,'(a16,i5.5)') '.ann.param.yaml.',iter
     endif
-    if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
-        if(parini%ntypat>1) then
-            stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
-        endif
-        do i=1,ann_arr%nann
-            write(fn_tt,'(i1)') i
-            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
-            call yaml_comment(trim(filename))
-            !write(*,'(a)') trim(filename)
-            call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
-        enddo
-    elseif(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
-        trim(ann_arr%approach)=='cent1' .or. trim(ann_arr%approach)=='centt' &
+    if(trim(ann_arr%approach)=='atombased' .or. trim(ann_arr%approach)=='eem1' .or. &
+        trim(ann_arr%approach)=='cent1' &
         .or. trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='cent3') then
         do i=1,ann_arr%nann
             filename=trim(parini%stypat(i))//trim(fn)
@@ -337,7 +331,7 @@ subroutine write_ann_all_yaml(parini,ann_arr,iter)
             call write_ann_yaml(parini,filename,ann_arr%ann(i),ann_arr%rcut)
         enddo
     else
-        stop 'ERROR: writing ANN parameters is only for cent1,centt,cent3,tb'
+        stop 'ERROR: writing ANN parameters is only for cent1,cent3'
     endif
 end subroutine write_ann_all_yaml
 !*****************************************************************************************
@@ -373,7 +367,7 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
     call set(subdict_ann//"ener_ref",ann%ener_ref)
     if(trim(parini%approach_ann)=='eem1' .or. trim(parini%approach_ann)=='cent1' .or. &
        trim(parini%approach_ann)=='cent2' .or. &
-        trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent3') then
+        trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"ampl_chi",ann%ampl_chi)
         call set(subdict_ann//"prefactor_chi",ann%prefactor_chi)
         call set(subdict_ann//"gausswidth",ann%gausswidth)
@@ -381,7 +375,7 @@ subroutine write_ann_yaml(parini,filename,ann,rcut)
         call set(subdict_ann//"chi0",ann%chi0)
         call set(subdict_ann//"qinit",ann%qinit)
     endif
-    if(trim(parini%approach_ann)=='centt' .or. trim(parini%approach_ann)=='cent2' .or. &
+    if(trim(parini%approach_ann)=='cent2' .or. &
         trim(parini%approach_ann)=='cent3') then
         call set(subdict_ann//"zion",ann%zion)
         call set(subdict_ann//"gausswidth_ion",ann%gausswidth_ion)
@@ -514,19 +508,12 @@ subroutine read_ann_yaml(parini,ann_arr)
         else
             write(fn,'(a15)') '.ann.param.yaml'
         endif
-        if(parini%bondbased_ann .and. trim(ann_arr%approach)=='tb') then
-            if(parini%ntypat>1) then
-                stop 'ERROR: writing ANN parameters for tb available only ntypat=1'
-            endif
-            write(fn_tt,'(i1)') iann
-            filename=trim(parini%stypat(1))//fn_tt//trim(fn)
-            write(*,'(a)') trim(filename)
-        elseif(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. &
-            trim(ann_arr%approach)=='centt' .or. trim(ann_arr%approach)=='cent3' .or. &
+        if(trim(ann_arr%approach)=='eem1' .or. trim(ann_arr%approach)=='cent1' .or. &
+            trim(ann_arr%approach)=='cent3' .or. &
             trim(ann_arr%approach)=='cent2' .or. trim(ann_arr%approach)=='atombased') then
             filename=trim(parini%stypat(iann))//trim(fn)
         else
-            stop 'ERROR: reading ANN parameters is only for cent1,centt,cent3,tb'
+            stop 'ERROR: reading ANN parameters is only for cent1,cent3'
         endif
         !-------------------------------------------------------
         call get_symfunc_parameters_yaml(parini,iproc,filename,ann_arr%ann(iann),rcut)
@@ -733,7 +720,6 @@ subroutine read_yaml_conf_train(parini,filename,nconfmax,atoms_arr,ann_arr)
     use mod_atoms, only: typ_atoms_arr, typ_file_info
     use mod_yaml_conf, only: read_yaml_conf_getdict, read_yaml_conf_getatoms
     use mod_ann, only: typ_ann_arr
-    !use mod_yaml_conf, only: read_yaml_conf_trial_energy
     use dictionaries
     use yaml_output
     implicit none
@@ -758,11 +744,6 @@ subroutine read_yaml_conf_train(parini,filename,nconfmax,atoms_arr,ann_arr)
             stop 'ERROR: ann_arr is absent and do not know how to read chi values!'
         endif
     endif
-    !if(ann_arr%trial_energy_required) then
-    !    file_info%dict=>confs_list
-    !    call read_yaml_conf_trial_energy(file_info,atoms_arr)
-    !    nullify(file_info%dict)
-    !endif
     call dict_free(confs_list)
     nullify(confs_list)
     call yaml_mapping_open('Number of configurations read',flow=.true.)
@@ -818,58 +799,6 @@ subroutine read_yaml_conf_chi(confs_list,filename,atoms_arr,ann_arr)
         nullify(dict1)
     enddo
 end subroutine read_yaml_conf_chi
-!*****************************************************************************************
-!subroutine read_yaml_conf_trial_energy(file_info,atoms_arr)
-!    use mod_atoms, only: typ_atoms_arr, typ_file_info
-!    use mod_trial_energy, only: trial_energy_allocate
-!    use dictionaries
-!    use yaml_parse
-!    use dynamic_memory
-!    use yaml_output
-!    implicit none
-!    type(typ_file_info), intent(in):: file_info
-!    type(typ_atoms_arr), intent(inout):: atoms_arr
-!    !local variables
-!    integer:: iconf, nconf, ii, iiconf
-!    integer:: ntrial, itrial, iat_trial
-!    real(8):: trial_energy, trial_x, trial_y, trial_z
-!    type(dictionary), pointer :: dict1=>null()
-!    type(dictionary), pointer :: dict2=>null()
-!    type(dictionary), pointer :: confs_list=>null()
-!    confs_list=>file_info%dict
-!    nconf=dict_len(confs_list)
-!    if(atoms_arr%nconf/=nconf) then
-!        stop 'ERROR: atoms_arr%nconf/=nconf in read_yaml_conf_trial_energy'
-!    endif
-!    if(nconf<1) stop 'ERROR: nconf<1 in read_yaml_conf_trial_energy'
-!    do iconf=1,nconf
-!        iiconf=iconf-1
-!        dict1=>confs_list//iiconf//'conf'
-!        if(has_key(dict1,"ntrial")) then
-!            ntrial=dict1//'ntrial'
-!        endif
-!        if(has_key(dict1,"trial_ref_energy")) then
-!            call trial_energy_allocate(ntrial,atoms_arr%atoms(iconf)%trial_energy)
-!            do itrial=1,ntrial
-!                ii=itrial-1
-!                dict2=>dict1//'trial_ref_energy'//ii
-!                iat_trial=dict2//0
-!                trial_x=dict2//1
-!                trial_y=dict2//2
-!                trial_z=dict2//3
-!                trial_energy=dict2//4
-!                atoms_arr%atoms(iconf)%trial_energy%iat_list(itrial)=iat_trial
-!                atoms_arr%atoms(iconf)%trial_energy%disp(1,itrial)=trial_x
-!                atoms_arr%atoms(iconf)%trial_energy%disp(2,itrial)=trial_y
-!                atoms_arr%atoms(iconf)%trial_energy%disp(3,itrial)=trial_z
-!                atoms_arr%atoms(iconf)%trial_energy%energy(itrial)=trial_energy
-!                nullify(dict2)
-!            enddo
-!        endif
-!        nullify(dict1)
-!    enddo
-!    nullify(confs_list)
-!end subroutine read_yaml_conf_trial_energy
 !*****************************************************************************************
 subroutine write_yaml_conf_train(file_info,atoms,ann_arr,print_chi,strkey)
     use mod_atoms, only: typ_file_info, typ_atoms
