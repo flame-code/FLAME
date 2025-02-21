@@ -7,11 +7,16 @@ Download
 =================
 
 The FLAME software is available on the flame website http://flame-code.org, and the
-latest development version can be found on GitHub https://github.com/flame-code.
+latest development version can be found on GitHub https://github.com/flame-code
+and on GitLab https://gitlab.com/flame-code.
 
 Download the current version of FLAME with 
 
 ``git clone https://github.com/flame-code/FLAME.git``
+
+or
+
+``git clone https://gitlab.com/flame-code/FLAME.git``
 
 =================
 Prerequisites

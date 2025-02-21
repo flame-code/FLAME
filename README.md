@@ -11,6 +11,10 @@
 [FLAME](flame-code.org) is a highly modular open source software package to perform atomistic simulations using a variety of techniques.
 
 
+## Documentation:
+The documentation is available in subdirectory `docs` as well as on
+[GitLab Pages](https://flame-code.gitlab.io/FLAME/index.html).
+
 ## Prerequisites
 
 FLAME requires `autoconf` and `automake`.
